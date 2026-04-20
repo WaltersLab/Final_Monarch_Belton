@@ -1,0 +1,366 @@
+---
+title: "Monarch_Manuscript"
+author: Calvin Belton & James Walters
+format: html
+editor: source
+theme: sandstone
+toc: true
+embed-resources: true
+number-sections: true
+---
+
+## Setting up
+
+```{r}
+library(flexsurv)
+library(ggplot2)
+library(tidyverse)
+library(ggfortify)# for `autoplot` with survfit
+library(survminer)
+library(kableExtra)
+library(patchwork)
+library(splines)
+library(muhaz)
+```
+
+## Load and Clean Data
+
+### Read Data
+
+```{r}
+monsurv_full <- read.csv(("../Input_Data/MonarchAgingData_2026_01_08.csv"))
+```
+
+### Clean sex column, remove extra whitespace, invalid/missing entries, and calculate age.
+
+In the dataset, some butterflies were incorrectly labeled with an extra space in the 'Sex' column (e.g., 'Female ' instead of 'Female'), which led to the appearance of an unintended third category. This step trims whitespace to ensure consistent labeling and filters the data to include only valid sex categories ('Male' and 'Female'). Additionally, the female at age 85 was excluded as an outlier, since the eclosion date on this individual was difficult to read, and therefore considered unreliable.
+
+```{r}
+monsurv <- monsurv_full %>%
+  mutate(Sex = str_trim(Sex)) %>%
+  filter(Sex %in% c("Male", "Female")) %>%
+  mutate(
+    DeathDate = as.Date(DeathDate),
+    EclosionDate = as.Date(EclosionDate),
+    AgeCalc = DeathDate - EclosionDate
+  ) %>%
+  filter(Age < 84)  # Remove age outliers
+tapply(monsurv$Age, monsurv$Sex, FUN=summary)
+```
+
+### Check to see if there's any difference between 'AgeCalc' and 'Age'
+
+There is not, we can move forward in the analysis using the variable 'Age'.
+
+```{r}
+any(monsurv_full$AgeCalc != monsurv_full$Age)
+```
+
+### Configure Sex as Factor (male as the reference)
+
+```{r}
+monsurv$Sex <- factor(monsurv$Sex, levels = c("Male", "Female"))
+```
+
+### Add "Event" column for survival analysis
+
+All observed dead; None are censored so all are 1
+
+```{r}
+monsurv$event <- 1
+```
+
+### Z-scale wing disc to aid in interpretation
+
+This centers and scales the data .
+
+```{r}
+monsurv$FWdc_z <- as.numeric(scale(monsurv$Discal.cell.forewing))
+```
+
+## Save out 'cleaned' dataset for subsequent scripts
+
+```{r}
+save(monsurv, file = "../Input_Data/monsurv.Rdata")
+```
+
+Before I start creating plots, I set up the custom theme and custom color palette that is continuous in my plots of monarch.
+
+## Custom theme
+
+```{r}
+theme_monarch <- theme_bw(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 14),
+    axis.title = element_text(face = "bold", size = 13),
+    axis.text = element_text(face = "bold", size = 11),
+    strip.text = element_text(face = "bold")
+  )
+```
+
+## Define color palette for sex
+
+```{r}
+sex_colors <- c("Male" = "dodgerblue","Female" = "firebrick2")
+```
+
+# Histogram of Age in each Sex
+
+```{r}
+full_histo_plot <- monsurv %>%
+  filter(!is.na(Sex)) %>%
+  ggplot(aes(x = Age, fill = Sex)) +
+  geom_histogram(binwidth = 1, color = "white") +
+  facet_wrap(~Sex, scales = "free_y", ncol = 1) +
+  scale_fill_manual(values = sex_colors) +
+  labs(
+    title = "Distribution of Adult Monarch Lifespans by Sex",
+    x = "Adult Lifespan (Days)",
+    y = "Number of Individuals"
+  ) +
+  theme_monarch +
+  theme(legend.position = "none")  # Remove redundant legend
+
+print(full_histo_plot)
+```
+
+### Save histogram of age by sex
+
+```{r}
+ggsave(
+  filename = "../Results/final_full_histo_plot.jpg",
+  plot = full_histo_plot,
+  width = 180,    
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
+## Plot the distribution of the eclosion dates
+
+```{r}
+eclosion_distribution <- monsurv %>%
+  ggplot(aes(x = EclosionDate)) +
+  geom_histogram(binwidth = 1, fill = "grey70", color = "grey30") +
+  labs(
+    title = "Eclosion Date Distribution in Monarch Butterflies",
+    x = "Date of Eclosion",
+    y = "Number of Individuals"
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",       
+    date_labels = "%b %Y"          
+  ) + theme_monarch
+
+print(eclosion_distribution)
+```
+
+### Save eclosion distribution plot
+
+```{r}
+ggsave(
+  filename = "../Results/final_eclosion_distribution.jpg",
+  plot = eclosion_distribution,
+  width = 180,    
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
+## Plot the distribution of death dates
+
+```{r}
+death_distribution <- monsurv %>%
+  ggplot(aes(x = DeathDate)) +
+  geom_histogram(binwidth = 1, fill = "grey70", color = "grey30") +
+  labs(
+    title = "Death Date Distribution in Monarch Butterflies",
+    x = "Date of Death",
+    y = "Number of Individuals"
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",       # adjust based on your data span
+    date_labels = "%b %Y"          # e.g., Jan 2023
+  ) + theme_monarch
+
+print(death_distribution)
+```
+
+### Save death distribution plot
+
+```{r}
+ggsave(
+  filename = "../Results/final_death_distribution.jpg",
+  plot = death_distribution,
+  width = 180,    
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
+## Tabulate missing values for size measures in each sex 
+
+```{r}
+monsurv %>%
+  filter(Sex %in% c("Male", "Female")) %>%
+  mutate(missing_wing = is.na(WingLength)) %>%
+  count(Sex, missing_wing)
+```
+
+# Descriptive Statistics concerning Size
+
+## Summary of Winglength
+
+```{r}
+tapply(monsurv$WingLength, monsurv$Sex, FUN=summary)
+```
+
+## Summary of Forewing discal cell size
+
+```{r}
+tapply(monsurv$Discal.cell.forewing, monsurv$Sex, FUN=summary)
+```
+
+## Boxplot of Winglength
+
+```{r}
+winglength_boxplot <- ggplot(monsurv, aes(x = Sex, y = WingLength, fill = Sex)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = sex_colors) +
+  theme_minimal() +
+  labs(
+    title = "Wing length across sexes",
+    x = "Sex",
+    y = "Wing length"
+  ) +
+  theme(legend.position = "none")
+```
+
+#### Save Boxplot of Winglength
+
+```{r}
+ggsave(
+  filename = "../Results/winglength_boxplot.jpg",
+  plot = winglength_boxplot,
+  width = 180,    
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
+## Boxplot of Forewing discal cell length
+
+```{r}
+forewing_boxplot <- ggplot(monsurv, aes(x = Sex, y = Discal.cell.forewing, fill = Sex)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = sex_colors) +
+  theme_minimal() +
+  labs(
+    title = "Forewing discal cell length across sexes",
+    x = "Sex",
+    y = "Forewing discal cell length"
+  ) +
+  theme(legend.position = "none")
+```
+
+#### Save Boxplot of Forewing discal cell length
+
+```{r}
+ggsave(
+  filename = "../Results/forewing_boxplot.jpg",
+  plot = forewing_boxplot,
+  width = 180,    
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
+#### Histogram of Forewing discal cell length
+
+```{r}
+forewing_histo <- ggplot(monsurv, aes(Discal.cell.forewing, fill = Sex)) +
+  geom_histogram(
+    bins = 30,
+    alpha = 0.5,
+    position = "identity",
+    color = "black"
+  ) +
+  scale_fill_manual(values = sex_colors) +
+  theme_minimal() +
+  labs(
+    title = "Histogram of forewing discal cell length across sexes",
+    x = "Forewing discal cell length",
+    y = "Count"
+  )
+```
+
+#### Save Histogram of Forewing discal cell length
+
+```{r}
+ggsave(
+  filename = "../Results/forewing_histo.jpg",
+  plot = forewing_histo,
+  width = 180,    
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
+### Correlation between Winglength and Discal cell forewing length Plot
+
+```{r}
+correlation_wing_forewing <- ggplot(monsurv, aes(WingLength, Discal.cell.forewing, color = Sex)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = sex_colors) +
+  theme_minimal() +
+  labs(
+    title = "Correlation: Forewing discal cell length to wing length",
+    x = "Wing length",
+    y = "Forewing discal cell length",
+    color = "Sex"
+  )
+```
+
+#### Save Correlation between Winglength and Discal cell forewing length Plot
+
+```{r}
+ggsave(
+  filename = "../Results/correlation_wing_forewing.jpg",
+  plot = correlation_wing_forewing,
+  width = 180,    
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
+## T-tests
+
+### Age t-test
+
+```{r}
+t.test(Age~Sex,data = monsurv)
+```
+
+### Winglength t-test
+
+```{r}
+t.test(WingLength~Sex,data = monsurv)
+```
+
+### Discal cell t-test
+
+```{r}
+t.test(Discal.cell.forewing~Sex,data = monsurv)
+```
+
+```{r}
+sessionInfo()
+```
