@@ -1,0 +1,51 @@
+Monarch Manuscript T-test Results
+ =================================
+
+
+-----------------------------------
+ Age t-test 
+-----------------------------------
+
+	Welch Two Sample t-test
+
+data:  Age by Sex
+t = 3.1865, df = 827.66, p-value = 0.001494
+alternative hypothesis: true difference in means between group Male and group Female is not equal to 0
+95 percent confidence interval:
+ 0.7757281 3.2644289
+sample estimates:
+  mean in group Male mean in group Female 
+            26.96698             24.94690 
+
+
+-----------------------------------
+ Winglength t-test 
+-----------------------------------
+
+	Welch Two Sample t-test
+
+data:  WingLength by Sex
+t = -0.11185, df = 665.32, p-value = 0.911
+alternative hypothesis: true difference in means between group Male and group Female is not equal to 0
+95 percent confidence interval:
+ -0.4672415  0.4168802
+sample estimates:
+  mean in group Male mean in group Female 
+            45.58962             45.61480 
+
+
+-----------------------------------
+ Discal Cell t-test 
+-----------------------------------
+
+	Welch Two Sample t-test
+
+data:  Discal.cell.forewing by Sex
+t = 11.518, df = 855.75, p-value < 2.2e-16
+alternative hypothesis: true difference in means between group Male and group Female is not equal to 0
+95 percent confidence interval:
+ 0.1096836 0.1547447
+sample estimates:
+  mean in group Male mean in group Female 
+            2.513314             2.381100 
+
