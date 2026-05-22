@@ -9,7 +9,7 @@ embed-resources: true
 number-sections: true
 ---
 
-## Setting up
+# Setting up
 
 ```{r}
 library(flexsurv)
@@ -25,7 +25,7 @@ library(muhaz)
 
 ## Load and Clean Data
 
-### Read Data
+## Read Data
 
 ```{r}
 monsurv_full <- read.csv(("../Input_Data/MonarchAgingData_2026_01_08.csv"))
@@ -128,7 +128,7 @@ print(full_histo_plot)
 
 ```{r}
 ggsave(
-  filename = "../Results/final_full_histo_plot.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_01_age_histogram.jpg",
   plot = full_histo_plot,
   width = 180,    
   height = 120,
@@ -160,7 +160,7 @@ print(eclosion_distribution)
 
 ```{r}
 ggsave(
-  filename = "../Results/final_eclosion_distribution.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_02_eclosion_distribution.jpg",
   plot = eclosion_distribution,
   width = 180,    
   height = 120,
@@ -192,7 +192,7 @@ print(death_distribution)
 
 ```{r}
 ggsave(
-  filename = "../Results/final_death_distribution.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_03_death_distribution.jpg",
   plot = death_distribution,
   width = 180,    
   height = 120,
@@ -237,13 +237,14 @@ winglength_boxplot <- ggplot(monsurv, aes(x = Sex, y = WingLength, fill = Sex)) 
     y = "Wing length"
   ) +
   theme(legend.position = "none")
+print(winglength_boxplot)
 ```
 
 #### Save Boxplot of Winglength
 
 ```{r}
 ggsave(
-  filename = "../Results/winglength_boxplot.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_04_winglength_boxplot.jpg",
   plot = winglength_boxplot,
   width = 180,    
   height = 120,
@@ -265,13 +266,14 @@ forewing_boxplot <- ggplot(monsurv, aes(x = Sex, y = Discal.cell.forewing, fill 
     y = "Forewing discal cell length"
   ) +
   theme(legend.position = "none")
+print(forewing_boxplot)
 ```
 
 #### Save Boxplot of Forewing discal cell length
 
 ```{r}
 ggsave(
-  filename = "../Results/forewing_boxplot.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_05_forewing_boxplot.jpg",
   plot = forewing_boxplot,
   width = 180,    
   height = 120,
@@ -297,13 +299,14 @@ forewing_histo <- ggplot(monsurv, aes(Discal.cell.forewing, fill = Sex)) +
     x = "Forewing discal cell length",
     y = "Count"
   )
+print(forewing_histo)
 ```
 
 #### Save Histogram of Forewing discal cell length
 
 ```{r}
 ggsave(
-  filename = "../Results/forewing_histo.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_06_forewing_histogram.jpg",
   plot = forewing_histo,
   width = 180,    
   height = 120,
@@ -326,13 +329,14 @@ correlation_wing_forewing <- ggplot(monsurv, aes(WingLength, Discal.cell.forewin
     y = "Forewing discal cell length",
     color = "Sex"
   )
+print(correlation_wing_forewing)
 ```
 
 #### Save Correlation between Winglength and Discal cell forewing length Plot
 
 ```{r}
 ggsave(
-  filename = "../Results/correlation_wing_forewing.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_07_correlation_wing_forewing.jpg",
   plot = correlation_wing_forewing,
   width = 180,    
   height = 120,
@@ -343,22 +347,57 @@ ggsave(
 
 ## T-tests
 
+```{r}
+stats_file <- "../Results/Descriptive_Results/Statistics/t_test_results.txt"
+
+cat(
+  "Monarch Manuscript T-test Results\n",
+  "=================================\n\n",
+  file = stats_file
+)
+```
+
+```{r}
+save_test <- function(test_obj, label, file){
+
+  cat(
+    "\n-----------------------------------\n",
+    label,
+    "\n-----------------------------------\n",
+    file = file,
+    append = TRUE
+  )
+
+  capture.output(
+    test_obj,
+    file = file,
+    append = TRUE
+  )
+}
+```
+
 ### Age t-test
 
 ```{r}
-t.test(Age~Sex,data = monsurv)
+age_ttest <- t.test(Age ~ Sex, data = monsurv)
+age_ttest
+save_test(age_ttest, "Age t-test", stats_file)
 ```
 
 ### Winglength t-test
 
 ```{r}
-t.test(WingLength~Sex,data = monsurv)
+wing_ttest <- t.test(WingLength ~ Sex, data = monsurv)
+wing_ttest
+save_test(wing_ttest, "Winglength t-test", stats_file)
 ```
 
 ### Discal cell t-test
 
 ```{r}
-t.test(Discal.cell.forewing~Sex,data = monsurv)
+discal_ttest <- t.test(Discal.cell.forewing ~ Sex, data = monsurv)
+discal_ttest
+save_test(discal_ttest, "Discal Cell t-test", stats_file)
 ```
 
 ```{r}

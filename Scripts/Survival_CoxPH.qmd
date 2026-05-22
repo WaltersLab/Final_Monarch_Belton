@@ -154,7 +154,7 @@ ggsave(
 )
 ```
 
-### Generate smoothed hazard rates via muhaz by sex
+### Generate smoothed hazard rates via muhaz by sex
 
 ```{r}
 # split by sex
@@ -171,7 +171,7 @@ haz_male <- muhaz(
 )
 ```
 
-### Overlay qx with smoothed hazard rates 
+### Overlay qx with smoothed hazard rates
 
 ```{r}
 jpeg("../Results/smoothed_hazard_plots.jpg",
@@ -192,7 +192,7 @@ dev.off()
 
 # CoxPH with original wing length
 
-### Model with winglength
+### Model with winglength
 
 ```{r}
 m0_nosex <- coxph(Surv(Age, event) ~ WingLength, data = monsurv)
@@ -211,9 +211,9 @@ m0_sex <- coxph(Surv(Age, event) ~ Sex + WingLength, data = monsurv)
 anova(m0_nosex, m0_sex, test="LRT")
 ```
 
-## Contrast survival between males WITH winglength vs MISSING winglength 
+## Contrast survival between males WITH winglength vs MISSING winglength
 
-### Plot KM for two groups males 
+### Plot KM for two groups males
 
 ```{r}
 monsurv$male_group <- NA
@@ -232,11 +232,13 @@ male_plot <- ggsurvplot(
   title = "Male Survival: Winglength Data vs. No Winglength Data",
   legend.title = "Male Group",
   legend.labs = c("No Winglength", "Winglength"),
-  legend = c(0.8, 0.5)
+  legend = c(0.8, 0.5),
+  palette = c("forestgreen", "darkorange")
 )
+print(male_plot)
 ```
 
-#### Save 'male_plot'
+#### Save male_plot
 
 ```{r}
 ggsave(
@@ -249,7 +251,7 @@ ggsave(
 )
 ```
 
-### Do KM test via survdiff for two groups of males (this shows males missing wings are longer lived...) 
+### Do KM test via survdiff for two groups of males (demonstrates that males missing wings are longer lived...)
 
 ```{r}
 km_test <- survdiff(Surv(Age, event) ~ male_group, data = male_data)
@@ -312,7 +314,7 @@ summary(m_log_split)
 summary(m_spline_split)
 ```
 
-### **Split model tests**
+### Split model tests
 
 Comparisons among models indicates that the spline model is not a significantly better fit. Thus, we proceed with the log-linear model.
 
@@ -332,9 +334,9 @@ anova(m_linear_split, m_log_split, test = "LRT")
 anova(m_log_split, m_spline_split, test = "LRT")
 ```
 
-### **Split diagnostics log-linear**
+### Split diagnostics log-linear
 
-We can examine the diagnostics for this model fit now. What we find in this case is that `Sex` now violates the diagnostics, seemingly invoking the mid-life shifts we observed in the plots of interval hazard rates.
+We can examine the diagnostics for this model fit now. What we find in this case is that Sex now violates the diagnostics, seemingly invoking the mid-life shifts we observed in the plots of interval hazard rates.
 
 ```{r}
 logsplit.zph <- cox.zph(m_log_split)
@@ -346,7 +348,7 @@ par(mfrow = c(2,2))
 plot(logsplit.zph)
 ```
 
-### **Sex-time interaction**
+### Sex-time interaction
 
 This diagnostic result points to a time-varying component of `Sex`, which we can aim to capture with an additional interaction term between Sex and time
 
@@ -386,7 +388,7 @@ anova(m_log_split, m_sex_tv_lin, test="LRT")
 anova(m_sex_tv_lin, m_sex_tv_log, test="LRT")
 ```
 
-The model comparison show that the linear-time interaction is not a better fit, but the log-time interaction is a significantly better fit. So the `Sex:LogTime` term significantly improves the model.
+The model comparison show that the linear-time interaction is not a better fit, but the log-time interaction is a significantly better fit. So the Sex:LogTime term significantly improves the model.
 
 The diagnostics are not violated
 
@@ -400,7 +402,7 @@ par(mfrow = c(2,2))
 plot(sextv.zph)
 ```
 
-### **Interpretations**
+### Interpretations
 
 We will interpret the coefficients of our best model (log-time interaction). These are in “log hazard” scale: negative numbers mean a reduced hazard rate relative to the reference.
 
@@ -451,7 +453,7 @@ ggsave(
 )
 ```
 
-Size follows a similar pattern, but since it is a continuous variable it is slightly different to think about. In this case, since we normalized to Z-scale, our unit is *standard deviation*.
+Size follows a similar pattern, but since it is a continuous variable it is slightly different to think about. In this case, since we normalized to Z-scale, our unit is standard deviation.
 
 Accordingly, a larger size will have reduced hazard, at least early in life. However, that effect reduces as time increases. So later in life, size offers relatively little protection, and possibly hurts.
 

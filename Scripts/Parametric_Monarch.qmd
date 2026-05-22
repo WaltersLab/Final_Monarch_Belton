@@ -9,7 +9,7 @@ embed-resources: true
 number-sections: true
 ---
 
-## Setting Up
+# Setting Up
 
 ```{r}
 library(flexsurv)
@@ -27,9 +27,38 @@ library(muhaz)
 load(file = "../Input_Data/monsurv.Rdata")
 ```
 
+## Initalize statistics output file
+
+```{r}
+stats_file <- "../Results/Parametric_Monarch/Statistics/parametric_results.txt"
+
+cat(
+  "PARAMETRIC ANALYSES\n",
+  "=================================\n\n",
+  file = stats_file
+)
+
+save_output <- function(object, label, file){
+
+  cat(
+    "\n====================================\n",
+    label,
+    "\n====================================\n",
+    file = file,
+    append = TRUE
+  )
+
+  capture.output(
+    object,
+    file = file,
+    append = TRUE
+  )
+}
+```
+
 # Choose Model Family
 
-We need to decide whether to use a *Gompertz* or *Weibull* survival model. To do this, we will fit three models using each family, and compare them. The three models are:
+We need to decide whether to use a Gompertz or Weibull survival model. To do this, we will fit three models using each family, and compare them. The three models are:
 
 -   Null (`~ 1`)
 
@@ -37,7 +66,7 @@ We need to decide whether to use a *Gompertz* or *Weibull* survival model. T
 
 -   Sex and Size (`~Sex + Size`)
 
-## **Fit model families**
+## Fit model families
 
 First, create the survival object.
 
@@ -47,7 +76,7 @@ survMon <- Surv(monsurv$Age, monsurv$event)
 
 Then we can fit each set of params for each model family.
 
-### **Fit Gompertz**
+### Fit Gompertz
 
 ```{r}
 fit_gp_null <- flexsurvreg(
@@ -69,7 +98,7 @@ fit_gp_sex_size <- flexsurvreg(
 )
 ```
 
-### **Fit Weibull**
+### Fit Weibull
 
 ```{r}
 fit_wb_null <- flexsurvreg(
@@ -91,7 +120,7 @@ fit_wb_sex_size <- flexsurvreg(
 )
 ```
 
-### **Adding `shape` variation to both gompertz and weibull**
+### Shape models:Gompertz and Weibull
 
 ```{r}
 fit_wb_shape_sex <- flexsurvreg(
@@ -123,7 +152,7 @@ fit_gp_full_sex <- flexsurvreg(
 )
 ```
 
-## **Compare model families**
+## Model comparison tables
 
 ### Compare models with shape to the null
 
@@ -147,7 +176,16 @@ fit_tbl2 %>%
   select(model_name, family, formula, npars, logLik, AIC, BIC)
 ```
 
-### Compare base models to the null
+```{r}
+save_output(
+  fit_tbl2 %>%
+    select(model_name, family, formula, npars, logLik, AIC, BIC),
+  "Parametric Model Comparison Table",
+  stats_file
+)
+```
+
+### Main model comparison
 
 ```{r}
 fit_tbl <- tibble(
@@ -183,6 +221,16 @@ fit_tbl %>%
 ```
 
 ```{r}
+save_output(
+  knitr::kable(tab, digits = 3),
+  "Parametric Model Comparison (Text Version)",
+  stats_file
+)
+```
+
+
+### Delta AIC/BIC (Weibull vs Gompertz)
+```{r}
 modelDeltas <- matrix(nrow = 3, ncol = 2)
 rownames(modelDeltas) <- unique(fit_tbl$formula)
 colnames(modelDeltas) <- c("AIC", "BIC")
@@ -198,9 +246,18 @@ for (form in unique(fit_tbl$formula)) {
 modelDeltas |> kbl() %>%  kable_classic("striped", full_width = F)
 ```
 
+```{r}
+save_output(
+  modelDeltas,
+  "AIC/BIC Differences (Gompertz - Weibull)",
+  stats_file
+)
+```
+
+
 It is clear that the Weibull is doing a much better job of fitting the data. Smaller AIC/BIC values are better, and a difference \>10 indicates strongly improved model fit.
 
-### **Visualize model fits**
+### Kaplan-Meier + model fits
 
 Next, we will visualize the model fits to the data as well. First, a basic Kaplan Meier fit.
 
@@ -210,7 +267,7 @@ km_sex <- survfit(survMon ~ Sex, data = monsurv)
 
 Plot Kaplan Meier data visualization and overlay the predicted model fits (and save them).
 
-Note the use of `lines()`, which invokes the method `lines.flexsurvreg()` function to add fitted lines to the existing Kaplan Meier plot. This is a handy convenience function! It is important to specify `newdata=` in order to get seperate lines for each factor in `Sex`.
+Note the use of lines(), which invokes the method lines.flexsurvreg() function to add fitted lines to the existing Kaplan Meier plot. This is a handy convenience function! It is important to specify newdata= in order to get seperate lines for each factor in Sex.
 
 ```{r}
 colM <- "dodgerblue"
@@ -219,7 +276,7 @@ myCols <- c(colM, colF)
 myLwd <- 2
 myLty <- 2
 
-jpeg("../Results/gompertz_weibull_plots.png", width = 90, height = 150, units = "mm", res=150)
+jpeg("../Results/Parametric_Monarch/Figures/Figure_01_gompertz_and_weibull_plots.png", width = 90, height = 150, units = "mm", res=150)
 
 par(mfrow = c(2,1))
 # Plot Gompertz
@@ -277,11 +334,11 @@ dev.off()
 
 In this visual contrast, the Weibull model is clearly a better fit, consistent with the AIC & BIC results.
 
-### **Plot Hazard Rates**
+### Hazard smoothing (muhaz)
 
 Another way to visualize this is to plot empirical hazard rates for each sex over time along side fitted values.
 
-Typically, we would get hazard rates by calculating the period mortality (*q~x~*) at each day. But a good alternative in this case is to use the `muhaz` package to get a “kernal-smoothed” estimate, which provides a more continuous version of the observed values, and makes for a better comparison to the continuous-time parametric modeling.
+Typically, we would get hazard rates by calculating the period mortality (qx) at each day. But a good alternative in this case is to use the muhaz package to get a “kernal-smoothed” estimate, which provides a more continuous version of the observed values, and makes for a better comparison to the continuous-time parametric modeling.
 
 #### Smoothed empirical hazards
 
@@ -334,7 +391,7 @@ smoothedhazard <- ggplot() +
 
 ```{r}
 ggsave(
-  filename = "../Results/smoothedhazard.jpg",
+  filename = "../Results/Parametric_Monarch/Figures/Figure_02_smoothedhazard.jpg",
   plot = smoothedhazard,
   width = 180,    
   height = 120,
@@ -427,7 +484,7 @@ predicted_smoothed <- ggplot() +
 
 ```{r}
 ggsave(
-  filename = "../Results/predicted_smoothed.jpg",
+  filename = "../Results/Parametric_Monarch/Figures/Figure_03_predicted_vs_smoothed_hazard.jpg",
   plot = predicted_smoothed,
   width = 180,    
   height = 120,
@@ -436,9 +493,9 @@ ggsave(
 )
 ```
 
-# **Test shape parameters**
+# Test shape parameters
 
-Having established that the Weibull model is better for our data, we will proceed with model comparisons to test whether there is evidence for significant variation in `shape`, indicating that there is a difference in aging.
+Having established that the Weibull model is better for our data, we will proceed with model comparisons to test whether there is evidence for significant variation in shape, indicating that there is a difference in aging.
 
 We will focus on 4 models:
 
@@ -450,11 +507,11 @@ We will focus on 4 models:
 
 -   M4: M1 + Sex + Size on shape
 
-In this framework, we are already assuming (i.e. not testing for) a “main” effect on scale from both `Sex` and `Size`. In other words, our “null” model starts with an assumption of these two parameters impacting the survival.
+In this framework, we are already assuming (i.e. not testing for) a “main” effect on scale from both Sex and Size. In other words, our “null” model starts with an assumption of these two parameters impacting the survival.
 
-What we are most keen to assess is whether adding `Sex` as a predictor to shape provides a significant improvement to the model fit. This would provide evidence that `Sex` impacts the age-specific hazard function. Significant differences between M2 vs M1, or M4 vs M3, would indicate `Sex` is a significant factor in the age-specific hazard function.
+What we are most keen to assess is whether adding Sex as a predictor to shape provides a significant improvement to the model fit. This would provide evidence that Sex impacts the age-specific hazard function. Significant differences between M2 vs M1, or M4 vs M3, would indicate Sex is a significant factor in the age-specific hazard function.
 
-## **Fit models**
+## Fit models
 
 ```{r}
 # M1: sex + size on main parameter only
@@ -489,7 +546,7 @@ M4fit_wb_shape_both <- flexsurvreg(
 )
 ```
 
-## **Extract parameters**
+## Extract parameters
 
 Now extract relevant model fitting parameters for comparisons.
 
@@ -522,6 +579,15 @@ fit_compare %>%
   scroll_box(width = "100%")
 ```
 
+```{r}
+save_output(
+  fit_compare %>%
+    select(model, npars, logLik, AIC, BIC),
+  "Weibull vs Gompertz model comparison (main + shape models)",
+  stats_file
+)
+```
+
 Using AIC, [the established precedent](https://stats.libretexts.org/Bookshelves/Advanced_Statistics/Intermediate_Statistics_with_R_(Greenwood)/08%3A_Multiple_linear_regression/8.13%3A_AICs_for_model_selection) is a difference \>2 is the basic threshold for a “significant” difference, and \>4 is “strong” support. BIC follows a [similar pattern](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
 
 Accordingly, AIC suggests that the “full” model (M4) with both `Sex` and `Size` is the best model overall, supporting the hypothesis that Sex is an important mediator of age-specific mortality. However, there is essentially no difference between models that include `Sex` as a predictor for shape versus the basic model (e.g. M1 vs M2).
@@ -530,9 +596,9 @@ BIC contrasts with AIC, and does not indicate any meaningful improvement in mode
 
 To resolve this we can turn to LRTs, which are arguably a stronger test of model fits, which we can do because several of these models are nested.
 
-## **Test model fits**
+## Test model fits
 
-We assess a significant improvement in model fit using a LRT. In many cases, model comparisons via LRT can be directly done by the `anova()` function. But it seems `flexsurvreg` objects don’t support this, so we need a custom function to do this.
+We assess a significant improvement in model fit using a LRT. In many cases, model comparisons via LRT can be directly done by the anova()function. But it seems flexsurvreg objects don’t support this, so we need a custom function to do this.
 
 ```{r}
 doLRT <- function(fitMore, fitLess) {
@@ -581,6 +647,14 @@ lrts <- bind_cols(comparison = c("M2vM1",
 
 lrts %>% kbl() %>%  kable_classic("striped") %>% 
   scroll_box(width = "100%")
+```
+
+```{r}
+save_output(
+  lrts,
+  "Likelihood ratio tests: shape parameter models",
+  stats_file
+)
 ```
 
 The LRTs provide additional support for a significant effect of sex, so long as we have size already in the model. This makes some intuitive sense, because size and sex are strongly related, as males are larger than females. So to detect the effect of sex, we need to account for size in the model as well.
