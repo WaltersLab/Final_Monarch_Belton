@@ -60,7 +60,7 @@ print(monsurv.fit)
 ### Graph systematics
 
 ```{r}
-sex_colors <- c("Sex=Male" = "dodgerblue","Sex=Female" = "firebrick2")
+sex_colors <- c("Male" = "dodgerblue","Female" = "firebrick2")
 colM <- "dodgerblue"
 colF <- "firebrick2"
 ```
@@ -75,6 +75,7 @@ survivorship_plot <- ggsurvplot(
   xlab = "Days Since Eclosion",
   ylab = "Survival Probability",
   legend.title = "Sex",
+  legend.labs = c("Male", "Female"),
   legend = "right",
   size = 1,
   title = "Monarch Survivorship across Sexes"
@@ -86,7 +87,7 @@ print(survivorship_plot)
 
 ```{r}
 ggsave(
-  filename = "../Results/final_survivorship_plot.jpg",
+  filename = "../Results/Survival_CoxPH/Figures/Figure_01_survivorship_plot.jpg",
   plot = survivorship_plot$plot,
   width = 180,    
   height = 120,
@@ -138,15 +139,16 @@ qxLogplot <- ggplot(data = mon_sum_DF, aes(x=x, y =log(qx), col = strata)) +
   theme_bw()
 
 # plot using patchwork syntax
-final_mortality_plot <- qxplot / qxLogplot
+mortality_plot <- qxplot / qxLogplot
+print(mortality_plot)
 ```
 
 #### Save mortality plot
 
 ```{r}
 ggsave(
-  filename = "../Results/final_mortality_plot.jpg",
-  plot = final_mortality_plot,
+  filename = "../Results/Survival_CoxPH/Figures/Figure_02_mortality_plot.jpg",
+  plot = mortality_plot,
   width = 180,    
   height = 120,
   units = "mm",
@@ -174,21 +176,61 @@ haz_male <- muhaz(
 ### Overlay qx with smoothed hazard rates
 
 ```{r}
-jpeg("../Results/smoothed_hazard_plots.jpg",
-     width = 180, height = 120, units = "mm", res = 300)
-liftab.sex <- split(mon_sum_DF, mon_sum_DF$strata)
-par(mfrow = c(1,2))
-plot(log(haz_female$haz.est) ~ haz_female$est.grid, 
-     col = colF, type = "l", ylim = c(-8,0), xlim = c(0,50),
-     ylab = "Log(Hazard Rate)", xlab = "Days", main = "Female")
-points(log(liftab.sex$Female$qx) ~ liftab.sex$Female$x, col = colF )
+female_haz <- data.frame(
+  time = haz_female$est.grid,
+  hazard = log(haz_female$haz.est),
+  sex = "Female"
+)
 
-plot(log(haz_male$haz.est) ~ haz_male$est.grid, 
-     col = colM, type = "l", ylim = c(-8,0), xlim = c(0,50),
-     ylab = "Log(Hazard Rate)", xlab = "Days", main = "Male")
-points(log(liftab.sex$Male$qx) ~ liftab.sex$Male$x, col = colM )
-dev.off()
+male_haz <- data.frame(
+  time = haz_male$est.grid,
+  hazard = log(haz_male$haz.est),
+  sex = "Male"
+)
+
+haz_df <- bind_rows(female_haz, male_haz)
+obs_df <- mon_sum_DF %>%
+  mutate(
+    log_qx = log(qx),
+    sex = strata
+  )
+ggplot() +
+  geom_line(data = haz_df,
+            aes(x = time, y = hazard, color = sex),
+            linewidth = 1) +
+  
+  geom_point(data = obs_df,
+             aes(x = x, y = log_qx, color = sex),
+             size = 1.5) +
+  
+  facet_wrap(~sex, nrow = 1) +
+  
+  scale_color_manual(values = c("Female" = colF,
+                                "Male" = colM)) +
+  
+  coord_cartesian(xlim = c(0, 50), ylim = c(-8, 0)) +
+  
+  labs(
+    x = "Days",
+    y = "Log(Hazard Rate)"
+  ) +
+  
+  theme_classic() +
+  theme(
+    legend.position = "none"
+  )
 ```
+Save plot
+```{r}
+ggsave(
+  "../Results/Survival_CoxPH/Figures/Figure_03_smoothed_hazard_plots.jpg",
+  width = 180,
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
 
 # CoxPH with original wing length
 
@@ -242,7 +284,7 @@ print(male_plot)
 
 ```{r}
 ggsave(
-  filename = "../Results/male_plot.jpg",
+  filename = "../Results/Survival_CoxPH/Figures/Figure_04_male_plot.jpg",
   plot = male_plot$plot,
   width = 180,    
   height = 120,
@@ -342,15 +384,29 @@ We can examine the diagnostics for this model fit now. What we find in this case
 logsplit.zph <- cox.zph(m_log_split)
 print(logsplit.zph)
 ```
-
-```{r}
+View plot in markdown
+```{r split_coxph_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
 par(mfrow = c(2,2))
 plot(logsplit.zph)
 ```
+Save plot
+```{r split_coxph_plot, eval=FALSE}
+jpeg(
+  filename = "../Results/Survival_CoxPH/Figures/Figure_05_split_coxph_diagnostics.jpg",
+  width = 180,
+  height = 120,
+  units = "mm",
+  res = 300
+)
 
+par(mfrow = c(2,2))
+plot(logsplit.zph)
+
+dev.off()
+```
 ### Sex-time interaction
 
-This diagnostic result points to a time-varying component of `Sex`, which we can aim to capture with an additional interaction term between Sex and time
+This diagnostic result points to a time-varying component of Sex, which we can aim to capture with an additional interaction term between Sex and time
 
 ```{r}
 # Linear interaction
@@ -397,10 +453,21 @@ sextv.zph <- cox.zph(m_sex_tv_log)
 sextv.zph
 ```
 
-```{r}
+```{r log_time_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
 par(mfrow = c(2,2))
 plot(sextv.zph)
 ```
+
+```{r save_log_time_plot, eval=FALSE}
+jpeg("../Results/Survival_CoxPH/Figures/Figure_06_log_time_coxph_diagnostics.jpg",
+     width = 180, height = 120, units = "mm", res = 300)
+
+par(mfrow = c(2,2))
+plot(sextv.zph)
+
+dev.off()
+```
+
 
 ### Interpretations
 
@@ -444,7 +511,7 @@ abline(h=1, lty=2, col = "red")
 
 ```{r}
 ggsave(
-  filename = "../Results/hazard_ratio.jpg",
+  filename = "../Results/Survival_CoxPH/Figures/Figure_07_hazard_ratio.jpg",
   plot = hazard_ratio,
   width = 180,    
   height = 120,
