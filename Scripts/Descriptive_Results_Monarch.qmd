@@ -1,5 +1,5 @@
 ---
-title: "Monarch_Manuscript"
+title: "Descriptive_Results_Monarch"
 author: Calvin Belton & James Walters
 format: html
 editor: source
@@ -31,6 +31,37 @@ library(muhaz)
 monsurv_full <- read.csv(("../Input_Data/MonarchAgingData_2026_01_08.csv"))
 ```
 
+## Function for saving files
+```{r}
+save_file <- function(test_obj, label, file){
+
+  cat(
+    "\n-----------------------------------\n",
+    label,
+    "\n-----------------------------------\n",
+    file = file,
+    append = TRUE
+  )
+
+  capture.output(
+    test_obj,
+    file = file,
+    append = TRUE
+  )
+}
+```
+
+```{r}
+summary_file <- "../Results/Descriptive_Results/Statistics/summary_statistics.txt"
+
+cat(
+  "Monarch Manuscript T-test Results\n",
+  "=================================\n\n",
+  file = summary_file
+)
+```
+
+
 ### Clean sex column, remove extra whitespace, invalid/missing entries, and calculate age.
 
 In the dataset, some butterflies were incorrectly labeled with an extra space in the 'Sex' column (e.g., 'Female ' instead of 'Female'), which led to the appearance of an unintended third category. This step trims whitespace to ensure consistent labeling and filters the data to include only valid sex categories ('Male' and 'Female'). Additionally, the female at age 85 was excluded as an outlier, since the eclosion date on this individual was difficult to read, and therefore considered unreliable.
@@ -45,7 +76,12 @@ monsurv <- monsurv_full %>%
     AgeCalc = DeathDate - EclosionDate
   ) %>%
   filter(Age < 84)  # Remove age outliers
-tapply(monsurv$Age, monsurv$Sex, FUN=summary)
+sex_summary <- tapply(monsurv$Age, monsurv$Sex, FUN=summary)
+```
+
+Save sex_summary
+```{r}
+save_file(sex_summary,"Age Summary by Sex", summary_file)
 ```
 
 ### Check to see if there's any difference between 'AgeCalc' and 'Age'
@@ -84,6 +120,7 @@ monsurv$FWdc_z <- as.numeric(scale(monsurv$Discal.cell.forewing))
 save(monsurv, file = "../Input_Data/monsurv.Rdata")
 ```
 
+
 Before I start creating plots, I set up the custom theme and custom color palette that is continuous in my plots of monarch.
 
 ## Custom theme
@@ -114,7 +151,6 @@ full_histo_plot <- monsurv %>%
   facet_wrap(~Sex, scales = "free_y", ncol = 1) +
   scale_fill_manual(values = sex_colors) +
   labs(
-    title = "Distribution of Adult Monarch Lifespans by Sex",
     x = "Adult Lifespan (Days)",
     y = "Number of Individuals"
   ) +
@@ -123,7 +159,6 @@ full_histo_plot <- monsurv %>%
 
 print(full_histo_plot)
 ```
-
 ### Save histogram of age by sex
 
 ```{r}
@@ -215,13 +250,23 @@ monsurv %>%
 ## Summary of Winglength
 
 ```{r}
-tapply(monsurv$WingLength, monsurv$Sex, FUN=summary)
+wing_summary <- tapply(monsurv$WingLength, monsurv$Sex, FUN=summary)
+```
+
+Save wing_length_summary
+```{r}
+save_file(wing_summary,"Winglength Summary by Sex", summary_file)
 ```
 
 ## Summary of Forewing discal cell size
 
 ```{r}
-tapply(monsurv$Discal.cell.forewing, monsurv$Sex, FUN=summary)
+forewing_summary <- tapply(monsurv$Discal.cell.forewing, monsurv$Sex, FUN=summary)
+```
+
+Save forewing_length_summary
+```{r}
+save_file(forewing_summary,"Forewing Summary by Sex", summary_file)
 ```
 
 ## Boxplot of Winglength
@@ -348,32 +393,13 @@ ggsave(
 ## T-tests
 
 ```{r}
-stats_file <- "../Results/Descriptive_Results/Statistics/t_test_results.txt"
+t_test_file <- "../Results/Descriptive_Results/Statistics/t_test_results.txt"
 
 cat(
   "Monarch Manuscript T-test Results\n",
   "=================================\n\n",
-  file = stats_file
+  file = t_test_file
 )
-```
-
-```{r}
-save_test <- function(test_obj, label, file){
-
-  cat(
-    "\n-----------------------------------\n",
-    label,
-    "\n-----------------------------------\n",
-    file = file,
-    append = TRUE
-  )
-
-  capture.output(
-    test_obj,
-    file = file,
-    append = TRUE
-  )
-}
 ```
 
 ### Age t-test
@@ -381,7 +407,7 @@ save_test <- function(test_obj, label, file){
 ```{r}
 age_ttest <- t.test(Age ~ Sex, data = monsurv)
 age_ttest
-save_test(age_ttest, "Age t-test", stats_file)
+save_file(age_ttest, "Age t-test", t_test_file)
 ```
 
 ### Winglength t-test
@@ -389,7 +415,7 @@ save_test(age_ttest, "Age t-test", stats_file)
 ```{r}
 wing_ttest <- t.test(WingLength ~ Sex, data = monsurv)
 wing_ttest
-save_test(wing_ttest, "Winglength t-test", stats_file)
+save_file(wing_ttest, "Winglength t-test", t_test_file)
 ```
 
 ### Discal cell t-test
@@ -397,7 +423,7 @@ save_test(wing_ttest, "Winglength t-test", stats_file)
 ```{r}
 discal_ttest <- t.test(Discal.cell.forewing ~ Sex, data = monsurv)
 discal_ttest
-save_test(discal_ttest, "Discal Cell t-test", stats_file)
+save_file(discal_ttest, "Discal Cell t-test", t_test_file)
 ```
 
 ```{r}

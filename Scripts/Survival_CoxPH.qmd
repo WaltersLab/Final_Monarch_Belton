@@ -21,15 +21,67 @@ library(kableExtra)
 library(patchwork)
 library(splines)
 library(muhaz)
+library(reporter)
 ```
 
-## Load previously 'cleaned' dataset
+# Load previously 'cleaned' dataset
 
 ```{r}
 load(file = "../Input_Data/monsurv.Rdata")
 ```
 
-# Sex Comparison of Survival
+## Function for saving files
+```{r}
+save_file <- function(test_obj, label, file){
+
+  cat(
+    "\n-----------------------------------\n",
+    label,
+    "\n-----------------------------------\n",
+    file = file,
+    append = TRUE
+  )
+
+  capture.output(
+    test_obj,
+    file = file,
+    append = TRUE
+  )
+}
+```
+
+## Graphics
+Before I start creating plots, I set up the custom theme and custom color palette that is continuous in my plots of monarch.
+## Custom theme
+```{r}
+theme_monarch <- theme_bw(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 14),
+    axis.title = element_text(face = "bold", size = 13),
+    axis.text = element_text(face = "bold", size = 11),
+    strip.text = element_text(face = "bold")
+  )
+```
+
+### Graph systematics
+
+```{r}
+sex_colors <- c("Male" = "dodgerblue","Female" = "firebrick2")
+colM <- "dodgerblue"
+colF <- "firebrick2"
+```
+
+```{r}
+survival_stats <- "../Results/Survival_CoxPH/Statistics/survival_stats.txt"
+
+cat(
+  "Monarch Manuscript Survival Results\n",
+  "=================================\n\n",
+  file = survival_stats
+)
+```
+
+## Sex Comparison of Survival
 
 ## Create Survival Object
 
@@ -42,29 +94,21 @@ survMon <- Surv(time = monsurv$Age, event = monsurv$event)
 ```{r}
 survMon.diff <- survdiff(survMon ~ Sex, data = monsurv)
 print(survMon.diff)
+save_file(survMon.diff,"Kaplan-Mier statistics", survival_stats)
 ```
-
 #### Find the p-value
 
 ```{r}
-survMon.diff$pvalue
+p <- survMon.diff$pvalue
+save_file(p,"Kaplan-Mier p-value", survival_stats)
 ```
-
-### Analyze with `survfit`
+### Analyze with survfit
 
 ```{r}
 monsurv.fit <- survfit(Surv(Age) ~ Sex, data = monsurv)
 print(monsurv.fit)
+save_file(monsurv.fit,"Kaplan-Mier survfit survival estimation", survival_stats)
 ```
-
-### Graph systematics
-
-```{r}
-sex_colors <- c("Male" = "dodgerblue","Female" = "firebrick2")
-colM <- "dodgerblue"
-colF <- "firebrick2"
-```
-
 ## Kaplan-Meier Plot
 
 ```{r}
@@ -78,7 +122,7 @@ survivorship_plot <- ggsurvplot(
   legend.labs = c("Male", "Female"),
   legend = "right",
   size = 1,
-  title = "Monarch Survivorship across Sexes"
+  ggtheme = theme_monarch
 )
 print(survivorship_plot)
 ```
@@ -106,6 +150,16 @@ ggsave(
 mon_sum <- summary(monsurv.fit)
 str(mon_sum)
 ```
+```{r}
+mortality_stats <- "../Results/Survival_CoxPH/Statistics/mortality_statistics.txt"
+
+cat(
+  "Monarch Manuscript Mortality Results\n",
+  "=================================\n\n",
+  file = mortality_stats
+)
+```
+
 
 ```{r}
 mon_sum_DF <- data.frame(
@@ -118,6 +172,7 @@ mon_sum_DF <- data.frame(
   strata = sub(x = mon_sum$strata, pattern = "Sex=", replacement = "")
 )
 mon_sum_DF$qx <- mon_sum_DF$dx/mon_sum_DF$nx
+save_file(mon_sum_DF,"Life-table data", mortality_stats)
 ```
 
 ### Visualize qx and log(qx) by sex
@@ -233,24 +288,47 @@ ggsave(
 
 
 # CoxPH with original wing length
+```{r}
+coxph_stats <- "../Results/Survival_CoxPH/Statistics/coxph_statistics.txt"
+
+cat(
+  "Monarch Manuscript Cox Proportional Hazards Results\n",
+  "=================================\n\n",
+  file = coxph_stats
+)
+```
 
 ### Model with winglength
 
 ```{r}
 m0_nosex <- coxph(Surv(Age, event) ~ WingLength, data = monsurv)
-summary(m0_nosex)
+sum_m0_nosex <- summary(m0_nosex)
+save_file(sum_m0_nosex,"CoxPH model(WingLength)", coxph_stats)
 ```
 
 ### Model with winglength and sex
 
 ```{r}
 m0_sex <- coxph(Surv(Age, event) ~ Sex + WingLength, data = monsurv)
+sum_m0_sex <- summary(m0_sex)
+save_file(sum_m0_sex,"CoxPH model(WingLength + Sex)", coxph_stats)
+```
+
+```{r}
+anova_stats <- "../Results/Survival_CoxPH/Statistics/ANOVA_statistics.txt"
+
+cat(
+  "Monarch Manuscript Cox Proportional Hazards ANOVA Results\n",
+  "=================================\n\n",
+  file = anova_stats
+)
 ```
 
 ### ANOVA comparison of the two previous models
 
 ```{r}
-anova(m0_nosex, m0_sex, test="LRT")
+anova_one <- anova(m0_nosex, m0_sex, test="LRT")
+save_file(anova_one,"Anova Comparison CoxPH model(WingLength) vs. CoxPH model(WingLength + Sex)", anova_stats)
 ```
 
 ## Contrast survival between males WITH winglength vs MISSING winglength
@@ -271,11 +349,12 @@ male_plot <- ggsurvplot(
   fit, data = male_data,
   pval = FALSE,
   risk.table = FALSE,
-  title = "Male Survival: Winglength Data vs. No Winglength Data",
   legend.title = "Male Group",
-  legend.labs = c("No Winglength", "Winglength"),
+  legend.labs = c("No Winglength Measured", "Winglength Measured"),
   legend = c(0.8, 0.5),
-  palette = c("forestgreen", "darkorange")
+  palette = c("forestgreen", "darkorange"),
+  ggtheme = theme_monarch,
+  xlab = "Days Since Eclosion"
 )
 print(male_plot)
 ```
@@ -297,29 +376,26 @@ ggsave(
 
 ```{r}
 km_test <- survdiff(Surv(Age, event) ~ male_group, data = male_data)
-km_test
+print(km_test)
+save_file(km_test,"Kaplan-Mier statistics for males data", survival_stats)
 ```
 
 # CoxPH with Forward Discal Cell
 
 ```{r}
-cuts <- seq(0, max(monsurv$Age), by = 1)  # 1-day intervals; you can use 2–3 days if you want fewer rows
+cuts <- seq(0, max(monsurv$Age), by = 1)  # 1-day intervals
 
 ds <- survSplit(
   Surv(Age, event) ~ .,
   data = monsurv,
-  cut = cuts[-c(1, length(cuts))],  # internal cuts only
+  cut = cuts[-c(1, length(cuts))],  
   start = "tstart",
   end = "tstop",
   event = "event"
 )
-
-# define analysis time for the interval (midpoint is common)
+# define analysis time for the interval 
 ds$tmid <- (ds$tstart + ds$tstop) / 2
 ds$logtmid <- log(ds$tmid)
-
-# avoid log(0) if your first interval starts at 0
-# ds <- subset(ds, tmid > 0)
 ```
 
 ### Fit split models
@@ -337,52 +413,72 @@ m_spline_split <- coxph(Surv(tstart, tstop, event) ~ Sex + FWdc_z + FWdc_z:ns(tm
 ```
 
 ```{r}
-summary(m_nosex_split)
+m_nosex_split_sum <- summary(m_nosex_split)
+save_file(m_nosex_split_sum,"CoxPH Model(Forewing discal cell)", coxph_stats)
 ```
 
 ```{r}
-summary(m_sex_split)
+m_sex_split_sum <- summary(m_sex_split)
+save_file(m_sex_split_sum,"CoxPH Model(Forewing discal cell + Sex)", coxph_stats)
 ```
 
 ```{r}
-summary(m_linear_split)
+m_linear_split_sum <- summary(m_linear_split)
+save_file(m_linear_split_sum,"CoxPH Model(Forewing discal cell + Sex + Linear time interaction with Forewing discal cell)", coxph_stats)
 ```
 
 ```{r}
-summary(m_log_split)
+m_log_split_sum <- summary(m_log_split)
+save_file(m_log_split_sum,"CoxPH Model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell)", coxph_stats)
 ```
 
 ```{r}
-summary(m_spline_split)
+m_spline_split_sum <- summary(m_spline_split)
+save_file(m_spline_split_sum,"CoxPH Model(Forewing discal cell + Sex + Spline time interaction with Forewing discal cell)", coxph_stats)
 ```
+
 
 ### Split model tests
 
 Comparisons among models indicates that the spline model is not a significantly better fit. Thus, we proceed with the log-linear model.
 
 ```{r}
-anova(m_nosex_split, m_sex_split, test = "LRT")
+anova_two <- anova(m_nosex_split, m_sex_split, test = "LRT")
+save_file(anova_two,"Anova Comparison CoxPH model(Forewing discal cell) vs. CoxPH model(Forewing discal cell + Sex)", anova_stats)
 ```
 
 ```{r}
-anova(m_sex_split, m_linear_split, test = "LRT")
+anova_three <- anova(m_sex_split, m_linear_split, test = "LRT")
+save_file(anova_three,"Anova Comparison CoxPH model(Forewing discal cell + Sex) vs. CoxPH model(Forewing discal cell + Sex + Linear time interaction with Forewing discal cell)", anova_stats)
 ```
 
 ```{r}
-anova(m_linear_split, m_log_split, test = "LRT")
+anova_four <- anova(m_linear_split, m_log_split, test = "LRT")
+save_file(anova_four,"Anova Comparison CoxPH model(Forewing discal cell + Sex + Linear time interaction with Forewing discal cell) vs. CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell)", anova_stats)
 ```
 
 ```{r}
-anova(m_log_split, m_spline_split, test = "LRT")
+anova_five <- anova(m_log_split, m_spline_split, test = "LRT")
+save_file(anova_five,"Anova Comparison CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell) vs. CoxPH model(Forewing discal cell + Sex + Spline time interaction with Forewing discal cell)", anova_stats)
 ```
 
 ### Split diagnostics log-linear
+```{r}
+diagnostics_stats <- "../Results/Survival_CoxPH/Statistics/diagnostics_statistics.txt"
+
+cat(
+  "Monarch Manuscript Diagnostics of Cox Proportional Hazards Models\n",
+  "=================================\n\n",
+  file = diagnostics_stats
+)
+```
 
 We can examine the diagnostics for this model fit now. What we find in this case is that Sex now violates the diagnostics, seemingly invoking the mid-life shifts we observed in the plots of interval hazard rates.
 
 ```{r}
 logsplit.zph <- cox.zph(m_log_split)
 print(logsplit.zph)
+save_file(logsplit.zph,"Diagnostics of CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell)", diagnostics_stats)
 ```
 View plot in markdown
 ```{r split_coxph_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
@@ -418,8 +514,8 @@ m_sex_tv_lin <- coxph(
     Sex:tmid,
   data = ds
 )
-
-summary(m_sex_tv_lin)
+m_sex_tv_lin_sum <- summary(m_sex_tv_lin)
+save_file(m_sex_tv_lin_sum,"CoxPH Model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Linear time interaction with Sex)", coxph_stats)
 ```
 
 ```{r}
@@ -432,25 +528,30 @@ m_sex_tv_log <- coxph(
     Sex:logtmid,
   data = ds
 )
-
-summary(m_sex_tv_log)
+m_sex_tv_log_sum <- summary(m_sex_tv_log)
+save_file(m_sex_tv_log_sum,"CoxPH Model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Logarithmic time interaction with Sex)", coxph_stats)
 ```
 
 ```{r}
-anova(m_log_split, m_sex_tv_lin, test="LRT")
+anova_six <- anova(m_log_split, m_sex_tv_lin, test="LRT")
+print(anova_six)
+save_file(anova_six,"Anova Comparison CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell) vs. CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Linear time interaction with Sex)", anova_stats)
 ```
 
 ```{r}
-anova(m_sex_tv_lin, m_sex_tv_log, test="LRT")
+anova_seven <- anova(m_sex_tv_lin, m_sex_tv_log, test="LRT")
+print(anova_seven)
+save_file(anova_seven,"Anova Comparison CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Linear time interaction with Sex) vs. CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Logarithmic time interaction with Sex)", anova_stats)
 ```
 
-The model comparison show that the linear-time interaction is not a better fit, but the log-time interaction is a significantly better fit. So the Sex:LogTime term significantly improves the model.
+The model comparison show that the log-time interaction is a better fit than the linear-time interaction. The Sex:LogTime term significantly improves the model.
 
 The diagnostics are not violated
 
 ```{r}
 sextv.zph <- cox.zph(m_sex_tv_log)
 sextv.zph
+save_file(sextv.zph,"Diagnostics of CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Logarithmic time interaction with Sex)", diagnostics_stats)
 ```
 
 ```{r log_time_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
@@ -467,7 +568,6 @@ plot(sextv.zph)
 
 dev.off()
 ```
-
 
 ### Interpretations
 
