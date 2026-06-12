@@ -462,7 +462,7 @@ print(smoothedhazard)
 #### Save smoothed hazard plot
 ```{r}
 ggsave(
-  filename = "../Results/Parametric_Monarch/Figures/Figure_02_smoothedhazard.jpg",
+  filename = "../Results/Parametric_Monarch/Figures/Figure_03_smoothedhazard.jpg",
   plot = smoothedhazard,
   width = 180,    
   height = 120,
@@ -554,7 +554,7 @@ print(predicted_smoothed)
 
 ```{r}
 ggsave(
-  filename = "../Results/Parametric_Monarch/Figures/Figure_03_predicted_vs_smoothed_hazard.jpg",
+  filename = "../Results/Parametric_Monarch/Figures/Figure_04_predicted_vs_smoothed_hazard.jpg",
   plot = predicted_smoothed,
   width = 180,    
   height = 120,
