@@ -1,0 +1,29 @@
+Monarch Manuscript Survival Results
+ =================================
+
+
+-----------------------------------
+ Kaplan-Mier statistics 
+-----------------------------------
+Call:
+survdiff(formula = survMon ~ Sex, data = monsurv)
+
+             N Observed Expected (O-E)^2/E (O-E)^2/V
+Sex=Male   424      424      483      7.13        18
+Sex=Female 452      452      393      8.74        18
+
+ Chisq= 18  on 1 degrees of freedom, p= 2e-05 
+
+-----------------------------------
+ Kaplan-Mier p-value 
+-----------------------------------
+[1] 2.224751e-05
+
+-----------------------------------
+ Kaplan-Mier survfit survival estimation 
+-----------------------------------
+Call: survfit(formula = Surv(Age) ~ Sex, data = monsurv)
+
+             n events median 0.95LCL 0.95UCL
+Sex=Male   424    424     27      26      28
+Sex=Female 452    452     25      25      26
