@@ -149,7 +149,7 @@ fit_gp_full_sex <- flexsurvreg(
 ## Initalize statistics output file
 
 ```{r}
-model_comparison <- "../Results/Survival_CoxPH/Statistics/model_comparison.txt"
+model_comparison <- "../Results/Parametric_Monarch/Statistics/model_comparison.txt"
 
 cat(
   "Monarch Manuscript Survival Results\n",
@@ -277,7 +277,7 @@ Note the use of lines(), which invokes the method lines.flexsurvreg() function t
 
 ```{r}
 jpeg(
-  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.png",
+  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.jpg",
   width = 90,
   height = 75,
   units = "mm",
@@ -334,7 +334,7 @@ dev.off()
 
 ```{r}
 jpeg(
-  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.png",
+  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.jpg",
   width = 90,
   height = 75,
   units = "mm",
@@ -393,7 +393,7 @@ dev.off()
 
 ```{r echo=FALSE, fig.align='center', out.width='70%'}
 knitr::include_graphics(
-  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.png"
+  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.jpg"
 )
 ```
 
@@ -401,7 +401,7 @@ knitr::include_graphics(
 
 ```{r echo=FALSE, fig.align='center', out.width='70%'}
 knitr::include_graphics(
-  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.png"
+  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.jpg"
 )
 ```
 
