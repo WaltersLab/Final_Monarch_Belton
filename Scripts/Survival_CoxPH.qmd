@@ -605,6 +605,7 @@ hazard_ratio <- plot(x = times,
      ylab="Female / Male Hazard Ratio",
      xlab="Age")
 abline(h=1, lty=2, col = "red")
+print(hazard_ratio)
 ```
 
 #### Save 'hazard ratio' plot
