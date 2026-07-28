@@ -27,26 +27,34 @@ library(muhaz)
 load(file = "../Input_Data/monsurv.Rdata")
 ```
 
-## Function for saving files
+## Initalize statistics output file
+
 ```{r}
-save_file <- function(test_obj, label, file){
+stats_file <- "../Results/Parametric_Monarch/Statistics/parametric_results.txt"
+
+cat(
+  "PARAMETRIC ANALYSES\n",
+  "=================================\n\n",
+  file = stats_file
+)
+
+save_output <- function(object, label, file){
 
   cat(
-    "\n-----------------------------------\n",
+    "\n====================================\n",
     label,
-    "\n-----------------------------------\n",
+    "\n====================================\n",
     file = file,
     append = TRUE
   )
 
   capture.output(
-    test_obj,
+    object,
     file = file,
     append = TRUE
   )
 }
 ```
-
 
 # Choose Model Family
 
@@ -146,18 +154,6 @@ fit_gp_full_sex <- flexsurvreg(
 
 ## Model comparison tables
 
-## Initalize statistics output file
-
-```{r}
-model_comparison <- "../Results/Parametric_Monarch/Statistics/model_comparison.txt"
-
-cat(
-  "Monarch Manuscript Survival Results\n",
-  "=================================\n\n",
-  file = model_comparison
-)
-```
-
 ### Compare models with shape to the null
 
 ```{r}
@@ -176,16 +172,19 @@ fit_tbl2 <- tibble(
   ) %>%
   arrange(AIC)
 
-table_one <- fit_tbl2 %>%
-  select(model_name, family, formula, npars, logLik, AIC, BIC) %>%
-  kbl() %>%
-  kable_classic("striped") %>%
-  scroll_box(width = "100%")
+fit_tbl2 %>%
+  select(model_name, family, formula, npars, logLik, AIC, BIC)
 ```
 
 ```{r}
-save_file(table_one,"Comparison of parametric models: models with sex impacting shape vs. null models", model_comparison)
+save_output(
+  fit_tbl2 %>%
+    select(model_name, family, formula, npars, logLik, AIC, BIC),
+  "Parametric Model Comparison Table",
+  stats_file
+)
 ```
+
 ### Main model comparison
 
 ```{r}
@@ -215,14 +214,10 @@ fit_tbl <- tibble(
   ) %>%
   arrange(AIC)
 
-table_two <- fit_tbl %>%
+fit_tbl %>%
   select(model_name, family, formula, npars, logLik, AIC, BIC) %>%
   kbl() %>%  kable_classic("striped") %>% 
   scroll_box(width = "100%")
-```
-
-```{r}
-save_file(table_two,"Comparison of parametric models: null models vs. Sex models vs. Forewing + Sex models", model_comparison)
 ```
 
 ### Delta AIC/BIC (Weibull vs Gompertz)
@@ -239,28 +234,19 @@ for (form in unique(fit_tbl$formula)) {
                               tmp_tbl$BIC[tmp_tbl$family == "Weibull"]
 }
 
-modelDeltas <- fit_tbl %>%
-  select(family, formula, AIC, BIC) %>%
-  tidyr::pivot_wider(
-    names_from = family,
-    values_from = c(AIC, BIC)
-  ) %>%
-  mutate(
-    `ΔAIC (Gompertz - Weibull)` = AIC_Gompertz - AIC_Weibull,
-    `ΔBIC (Gompertz - Weibull)` = BIC_Gompertz - BIC_Weibull
-  ) %>%
-  select(
-    formula,
-    `ΔAIC (Gompertz - Weibull)`,
-    `ΔBIC (Gompertz - Weibull)`
-  )
-print(modelDeltas)
+modelDeltas |> kbl() %>%  kable_classic("striped", full_width = F)
 ```
-All the values are positive, meaning the Gompertz models have substantially larger AIC/BIC than the corresponding Weibull models, so the Weibull family is preferred for every predictor set.
 
 ```{r}
-save_file(modelDeltas,"Gompertz-Weibull for each of the models formulas", model_comparison)
+save_output(
+  modelDeltas,
+  "AIC/BIC Differences (Gompertz - Weibull)",
+  stats_file
+)
 ```
+
+
+It is clear that the Weibull is doing a much better job of fitting the data. Smaller AIC/BIC values are better, and a difference \>10 indicates strongly improved model fit.
 
 ### Kaplan-Meier + model fits
 
@@ -274,10 +260,18 @@ Plot Kaplan Meier data visualization and overlay the predicted model fits (and s
 
 Note the use of lines(), which invokes the method lines.flexsurvreg() function to add fitted lines to the existing Kaplan Meier plot. This is a handy convenience function! It is important to specify newdata= in order to get seperate lines for each factor in Sex.
 
+```{r}
+colM <- "dodgerblue"
+colF <- "firebrick2"
+myCols <- c(colM, colF)
+myLwd <- 2
+myLty <- 2
+```
+
 
 ```{r}
 jpeg(
-  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.jpg",
+  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.png",
   width = 90,
   height = 75,
   units = "mm",
@@ -285,46 +279,38 @@ jpeg(
 )
 
 par(
-  mar = c(4,4,3,1),
+  mar = c(4,4,0.5,1),
   cex.main = 0.85,
   font.main = 1,
-  cex.lab = 0.8,   
+  cex.lab = 0.8,    # smaller xlab and ylab
   cex.axis = 0.8
 )
 
 plot(
   km_sex,
-  col = c("darkblue", "red"),
-  lty = c(1, 2),      
-  lwd = 2,
+  col = myCols,
+  lwd = myLwd,
   conf.int = FALSE,
   mark.time = FALSE,
   xlim = c(0, max(monsurv$Age)),
   ylim = c(0, 1),
   xlab = "Age (days)",
-  ylab = "Survival probability",
-  main = "Gompertz model fit"
+  ylab = "Survival probability"
 )
-
 lines(
   fit_gp_sex,
   newdata = data.frame(Sex = levels(monsurv$Sex)),
-  col = c("gray", "black"),
-  lty = c(1, 2),
-  lwd = 2
+  col = c("dodgerblue", "firebrick2"),
+  lty = c(3, 3),   # dotted
+  lwd = 1.2
 )
 
 legend(
   "topright",
-  legend = c(
-    "Observed Male",
-    "Observed Female",
-    "Fitted Male",
-    "Fitted Female"
-),
-  col = c("darkblue", "red", "gray", "black"),
-  lty = c(1, 2, 1, 2),
-  lwd = 2,
+  legend = c("Male", "Female", "Observed", "Fitted"),
+  col = c("dodgerblue", "firebrick2", "black", "black"),
+  lty = c(1, 1, 1, 3),
+  lwd = c(2, 2, 1.2, 1.2),
   bty = "n",
   cex = 0.7
 )
@@ -332,9 +318,10 @@ legend(
 dev.off()
 ```
 
+
 ```{r}
 jpeg(
-  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.jpg",
+  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.png",
   width = 90,
   height = 75,
   units = "mm",
@@ -342,69 +329,49 @@ jpeg(
 )
 
 par(
-  mar = c(4,4,3,1),
+  mar = c(4,4,0.5,1),
   cex.main = 0.85,
   font.main = 1,
   cex.lab = 0.8,    
   cex.axis = 0.8
 )
 
+## 1. Observed KM curves FIRST (this creates the plot region)
 plot(
   km_sex,
-  col = c("darkblue", "red"),
-  lty = c(1, 2),
+  col = c("dodgerblue", "firebrick2"),
+  lty = c(1, 1),
   lwd = 2,
   conf.int = FALSE,
   mark.time = FALSE,
   xlim = c(0, max(monsurv$Age)),
   ylim = c(0, 1),
   xlab = "Days Since Eclosion",
-  ylab = "Survival probability",
-  main = "Weibull model fit"
+  ylab = "Survival probability"
 )
 
+## 2. Fitted curves ON TOP
 lines(
   fit_wb_sex,
   newdata = data.frame(Sex = levels(monsurv$Sex)),
-  col = c("gray", "black"),
-  lty = c(1, 2),
-  lwd = 2
+  col = c("dodgerblue", "firebrick2"),
+  lty = c(3, 3),   # dotted
+  lwd = 1.2
 )
 
+## 3. Legend
 legend(
   "topright",
-  legend = c(
-    "Observed Male",
-    "Observed Female",
-    "Fitted Male",
-    "Fitted Female"
-  ),
-  col = c("darkblue", "red", "gray", "black"),
-  lty = c(1, 2, 1, 2),
-  lwd = 2,
+  legend = c("Male", "Female", "Observed", "Fitted"),
+  col = c("dodgerblue", "firebrick2", "black", "black"),
+  lty = c(1, 1, 1, 3),
+  lwd = c(2, 2, 1.2, 1.2),
   bty = "n",
   cex = 0.7
 )
 
 dev.off()
 ```
-
-## Gompertz model
-
-```{r echo=FALSE, fig.align='center', out.width='70%'}
-knitr::include_graphics(
-  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.jpg"
-)
-```
-
-## Weibull model
-
-```{r echo=FALSE, fig.align='center', out.width='70%'}
-knitr::include_graphics(
-  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.jpg"
-)
-```
-
 In this visual contrast, the Weibull model is clearly a better fit, consistent with the AIC & BIC results.
 
 ### Hazard smoothing (muhaz)
@@ -416,6 +383,7 @@ Typically, we would get hazard rates by calculating the period mortality (qx) at
 #### Smoothed empirical hazards
 
 Obtain smoothed male and female hazards from the data.
+
 ```{r}
 # split by sex
 haz_female <- muhaz(
@@ -430,6 +398,7 @@ haz_male <- muhaz(
 ```
 
 Then bind these two together into a “tidy” dataframe. We filter to remove early values == 0 to avoid infinity values in log-transformation
+
 ```{r}
 emp_haz_df <- bind_rows(
   data.frame(
@@ -446,20 +415,21 @@ emp_haz_df <- bind_rows(
 ```
 
 ### Plot Smoothed Hazard Rates
+
 ```{r}
 smoothedhazard <- ggplot() +
   geom_line(
     data = emp_haz_df,
     aes(x = time, y = log(hazard), colour = Sex),
     linewidth = 1
-  ) +
-  theme_bw() +
-  scale_color_manual(values = c("red", "darkblue")) +
+  ) + theme_bw() +
+  scale_color_manual(values = rev(myCols)) +
   ggtitle("Smoothed Hazard Rates")
 print(smoothedhazard)
 ```
 
 #### Save smoothed hazard plot
+
 ```{r}
 ggsave(
   filename = "../Results/Parametric_Monarch/Figures/Figure_03_smoothedhazard.jpg",
@@ -472,7 +442,9 @@ ggsave(
 ```
 
 ### Predicted values
+
 Now we use the models to obtain predicted values of hazard rates across the relevant time range.
+
 ```{r}
 tgrid <- seq(
   from = min(monsurv$Age, na.rm = TRUE),
@@ -544,7 +516,6 @@ predicted_smoothed <- ggplot() +
   labs(
     x = "Age (days)",
     y = "log(Hazard)",
-    title = "Empirical and parametric log-hazard curves by sex"
   ) +
   theme_bw()
 print(predicted_smoothed)
@@ -650,13 +621,17 @@ fit_compare %>%
 ```
 
 ```{r}
-save_file(fit_compare,"Weibull: Model comparisons to determine the metrics that effect shape", model_comparison)
+save_output(
+  fit_compare %>%
+    select(model, npars, logLik, AIC, BIC),
+  "Weibull vs Gompertz model comparison (main + shape models)",
+  stats_file
+)
 ```
 
+Using AIC, [the established precedent](https://stats.libretexts.org/Bookshelves/Advanced_Statistics/Intermediate_Statistics_with_R_(Greenwood)/08%3A_Multiple_linear_regression/8.13%3A_AICs_for_model_selection) is a difference \>2 is the basic threshold for a “significant” difference, and \>4 is “strong” support. BIC follows a [similar pattern](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
 
-Using AIC, the established precedent, a difference of over 2 is the basic threshold for a “significant” difference, and over 4 is “strong” support. BIC follows a similar pattern.
-
-AIC suggests that the “full” model (M4) with both Sex and Size is the best model overall, supporting the hypothesis that Sex is an important mediator of age-specific mortality. However, there is essentially no difference between models that include Sex as a predictor for shape versus the basic model (ex) M1 vs M2).
+Accordingly, AIC suggests that the “full” model (M4) with both `Sex` and `Size` is the best model overall, supporting the hypothesis that Sex is an important mediator of age-specific mortality. However, there is essentially no difference between models that include `Sex` as a predictor for shape versus the basic model (e.g.M1 vs M2).
 
 BIC contrasts with AIC, and does not indicate any meaningful improvement in model fit between M4 vs M3.
 
@@ -716,7 +691,11 @@ lrts %>% kbl() %>%  kable_classic("striped") %>%
 ```
 
 ```{r}
-save_file(lrts,"Direct model comparisons to determine the best fit Weibull model", model_comparison)
+save_output(
+  lrts,
+  "Likelihood ratio tests: shape parameter models",
+  stats_file
+)
 ```
 
 The LRTs provide additional support for a significant effect of sex, so long as we have size already in the model. This makes some intuitive sense, because size and sex are strongly related, as males are larger than females. So to detect the effect of sex, we need to account for size in the model as well.

@@ -27,7 +27,31 @@ Analysis of Deviance Table
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 -----------------------------------
- Anova Comparison CoxPH model(Forewing discal cell + Sex) vs. CoxPH model(Forewing discal cell + Sex + Linear time interaction with Forewing discal cell) 
+ Anova Comparison CoxPH Model(Forewing discal cell) vs. CoxPH Model(Forewing discal cell + Forewing discal cell:Age) 
+-----------------------------------
+Analysis of Deviance Table
+ Cox model: response is  Surv(tstart, tstop, event)
+ Model 1: ~ FWdc_z
+ Model 2: ~ FWdc_z + FWdc_z:tmid
+   loglik  Chisq Df Pr(>|Chi|)    
+1 -5034.7                         
+2 -5028.3 12.858  1   0.000336 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+-----------------------------------
+ Anova Comparison CoxPH Model(Forewing discal cell + Forewing discal cell:Age) vs. CoxPH Model(Forewing discal cell + Sex + Forewing discal cell:Age) 
+-----------------------------------
+Analysis of Deviance Table
+ Cox model: response is  Surv(tstart, tstop, event)
+ Model 1: ~ FWdc_z + FWdc_z:tmid
+ Model 2: ~ Sex + FWdc_z + FWdc_z:tmid
+   loglik  Chisq Df Pr(>|Chi|)
+1 -5028.3                     
+2 -5027.0 2.5944  1     0.1072
+
+-----------------------------------
+ Anova Comparison CoxPH model(Forewing discal cell + Sex) vs. CoxPH model(Forewing discal cell + Sex + Forewing discal cell:Age) 
 -----------------------------------
 Analysis of Deviance Table
  Cox model: response is  Surv(tstart, tstop, event)
@@ -40,53 +64,75 @@ Analysis of Deviance Table
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 -----------------------------------
- Anova Comparison CoxPH model(Forewing discal cell + Sex + Linear time interaction with Forewing discal cell) vs. CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell) 
+ Anova Comparison CoxPH model(Forewing discal cell) vs. CoxPH model(Forewing discal cell + Forewing discal cell:logAge) 
 -----------------------------------
 Analysis of Deviance Table
  Cox model: response is  Surv(tstart, tstop, event)
- Model 1: ~ Sex + FWdc_z + FWdc_z:tmid
+ Model 1: ~ FWdc_z
+ Model 2: ~ FWdc_z + FWdc_z:logtmid
+   loglik  Chisq Df Pr(>|Chi|)    
+1 -5034.7                         
+2 -5028.8 11.802  1  0.0005918 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+-----------------------------------
+ Anova Comparison CoxPH model(Forewing discal cell + Forewing discal cell:logAge) vs. CoxPH model(Sex + Forewing discal cell + Forewing discal cell:logAge) 
+-----------------------------------
+Analysis of Deviance Table
+ Cox model: response is  Surv(tstart, tstop, event)
+ Model 1: ~ FWdc_z + FWdc_z:logtmid
+ Model 2: ~ Sex + FWdc_z + FWdc_z:logtmid
+   loglik  Chisq Df Pr(>|Chi|)  
+1 -5028.8                       
+2 -5027.4 2.7711  1    0.09598 .
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+-----------------------------------
+ Anova Comparison CoxPH model(Sex + Forewing discal cell) vs. CoxPH model(Sex + Forewing discal cell + Forewing discal cell:logAge) 
+-----------------------------------
+Analysis of Deviance Table
+ Cox model: response is  Surv(tstart, tstop, event)
+ Model 1: ~ Sex + FWdc_z
  Model 2: ~ Sex + FWdc_z + FWdc_z:logtmid
    loglik  Chisq Df Pr(>|Chi|)    
-1 -5027.0                         
-2 -5027.4 0.8797  0  < 2.2e-16 ***
+1 -5033.2                         
+2 -5027.4 11.597  1  0.0006606 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 -----------------------------------
- Anova Comparison CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell) vs. CoxPH model(Forewing discal cell + Sex + Spline time interaction with Forewing discal cell) 
+ Anova Comparison CoxPH model(Sex + Forewing discal cell + Forewing discal cell:logAge) vs. CoxPH model(Sex + Forewing discal cell + Forewing discal cell:logAge + Sex:logAge) 
 -----------------------------------
 Analysis of Deviance Table
  Cox model: response is  Surv(tstart, tstop, event)
  Model 1: ~ Sex + FWdc_z + FWdc_z:logtmid
- Model 2: ~ Sex + FWdc_z + FWdc_z:ns(tmid, df = 3)
-   loglik  Chisq Df Pr(>|Chi|)  
-1 -5027.4                       
-2 -5024.5 5.8726  2    0.05306 .
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
------------------------------------
- Anova Comparison CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell) vs. CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Linear time interaction with Sex) 
------------------------------------
-Analysis of Deviance Table
- Cox model: response is  Surv(tstart, tstop, event)
- Model 1: ~ Sex + FWdc_z + FWdc_z:logtmid
- Model 2: ~ Sex + FWdc_z + FWdc_z:logtmid + Sex:tmid
-   loglik  Chisq Df Pr(>|Chi|)  
-1 -5027.4                       
-2 -5026.0 2.8106  1    0.09364 .
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
------------------------------------
- Anova Comparison CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Linear time interaction with Sex) vs. CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Logarithmic time interaction with Sex) 
------------------------------------
-Analysis of Deviance Table
- Cox model: response is  Surv(tstart, tstop, event)
- Model 1: ~ Sex + FWdc_z + FWdc_z:logtmid + Sex:tmid
  Model 2: ~ Sex + FWdc_z + FWdc_z:logtmid + Sex:logtmid
-   loglik  Chisq Df Pr(>|Chi|)    
-1 -5026.0                         
-2 -5024.4 3.2175  0  < 2.2e-16 ***
+   loglik  Chisq Df Pr(>|Chi|)  
+1 -5027.4                       
+2 -5024.4 6.0282  1    0.01408 *
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+-----------------------------------
+ Anova Comparison CoxPH Model(Forewing discal cell + Forewing discal cell:tt(Age)) vs. CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:tt(Age)) 
+-----------------------------------
+Analysis of Deviance Table
+ Cox model: response is  Surv(Age, event)
+ Model 1: ~ FWdc_z + tt(FWdc_z)
+ Model 2: ~ Sex + FWdc_z + tt(FWdc_z)
+   loglik  Chisq Df Pr(>|Chi|)
+1 -5028.3                     
+2 -5027.0 2.5944  1     0.1072
+
+-----------------------------------
+ Anova Comparison CoxPH Model(Forewing discal cell + Forewing discal cell:log(tt(Age))) vs. CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age))) 
+-----------------------------------
+Analysis of Deviance Table
+ Cox model: response is  Surv(Age, event)
+ Model 1: ~ FWdc_z + tt(FWdc_z)
+ Model 2: ~ Sex + FWdc_z + tt(FWdc_z)
+   loglik  Chisq Df Pr(>|Chi|)
+1 -5028.3                     
+2 -5027.0 2.5944  1     0.1072

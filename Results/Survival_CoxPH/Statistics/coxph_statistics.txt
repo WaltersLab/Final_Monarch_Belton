@@ -97,7 +97,32 @@ Score (logrank) test = 60  on 2 df,   p=9e-14
 
 
 -----------------------------------
- CoxPH Model(Forewing discal cell + Sex + Linear time interaction with Forewing discal cell) 
+ CoxPH Model(Forewing discal cell + Forewing discal cell:Age) 
+-----------------------------------
+Call:
+coxph(formula = Surv(tstart, tstop, event) ~ FWdc_z + FWdc_z:tmid, 
+    data = ds)
+
+  n= 22710, number of events= 876 
+
+                 coef exp(coef)  se(coef)      z Pr(>|z|)    
+FWdc_z      -0.584876  0.557175  0.097344 -6.008 1.87e-09 ***
+FWdc_z:tmid  0.012336  1.012413  0.003479  3.546 0.000391 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+            exp(coef) exp(-coef) lower .95 upper .95
+FWdc_z         0.5572     1.7948    0.4604    0.6743
+FWdc_z:tmid    1.0124     0.9877    1.0055    1.0193
+
+Concordance= 0.587  (se = 0.012 )
+Likelihood ratio test= 70.51  on 2 df,   p=5e-16
+Wald test            = 69.29  on 2 df,   p=9e-16
+Score (logrank) test = 68.95  on 2 df,   p=1e-15
+
+
+-----------------------------------
+ CoxPH Model(Forewing discal cell + Sex + Forewing discal cell:Age) 
 -----------------------------------
 Call:
 coxph(formula = Surv(tstart, tstop, event) ~ Sex + FWdc_z + FWdc_z:tmid, 
@@ -124,7 +149,32 @@ Score (logrank) test = 71.39  on 3 df,   p=2e-15
 
 
 -----------------------------------
- CoxPH Model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell) 
+ CoxPH Model(Forewing discal cell + Forewing discal cell:logAge) 
+-----------------------------------
+Call:
+coxph(formula = Surv(tstart, tstop, event) ~ FWdc_z + FWdc_z:logtmid, 
+    data = ds)
+
+  n= 22710, number of events= 876 
+
+                   coef exp(coef) se(coef)      z Pr(>|z|)    
+FWdc_z         -1.03659   0.35466  0.22856 -4.535 5.75e-06 ***
+FWdc_z:logtmid  0.24428   1.27670  0.07122  3.430 0.000604 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+               exp(coef) exp(-coef) lower .95 upper .95
+FWdc_z            0.3547     2.8196    0.2266    0.5551
+FWdc_z:logtmid    1.2767     0.7833    1.1104    1.4680
+
+Concordance= 0.587  (se = 0.012 )
+Likelihood ratio test= 69.45  on 2 df,   p=8e-16
+Wald test            = 68.52  on 2 df,   p=1e-15
+Score (logrank) test = 68.05  on 2 df,   p=2e-15
+
+
+-----------------------------------
+ CoxPH Model(Forewing discal cell + Size + Forewing discal cell:logAge) 
 -----------------------------------
 Call:
 coxph(formula = Surv(tstart, tstop, event) ~ Sex + FWdc_z + FWdc_z:logtmid, 
@@ -151,92 +201,105 @@ Score (logrank) test = 70.66  on 3 df,   p=3e-15
 
 
 -----------------------------------
- CoxPH Model(Forewing discal cell + Sex + Spline time interaction with Forewing discal cell) 
+ CoxPH Model(Forewing discal cell + Forewing discal cell:tt(Age)) 
 -----------------------------------
 Call:
-coxph(formula = Surv(tstart, tstop, event) ~ Sex + FWdc_z + FWdc_z:ns(tmid, 
-    df = 3), data = ds)
+coxph(formula = Surv(Age, event) ~ FWdc_z + tt(FWdc_z), data = monsurv, 
+    tt = function(x, t, ...) x * t)
 
-  n= 22710, number of events= 876 
+  n= 876, number of events= 876 
 
-                             coef exp(coef) se(coef)      z Pr(>|z|)    
-SexFemale                 0.11747   1.12465  0.07323  1.604 0.108675    
-FWdc_z                   -1.09047   0.33606  0.34126 -3.195 0.001396 ** 
-FWdc_z:ns(tmid, df = 3)1  0.25054   1.28472  0.25641  0.977 0.328527    
-FWdc_z:ns(tmid, df = 3)2  2.12248   8.35181  0.72288  2.936 0.003323 ** 
-FWdc_z:ns(tmid, df = 3)3  1.56837   4.79882  0.44155  3.552 0.000382 ***
+                coef exp(coef)  se(coef)      z Pr(>|z|)    
+FWdc_z     -0.591044  0.553749  0.098970 -5.972 2.34e-09 ***
+tt(FWdc_z)  0.012336  1.012413  0.003479  3.546 0.000391 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-                         exp(coef) exp(-coef) lower .95 upper .95
-SexFemale                   1.1247     0.8892    0.9743     1.298
-FWdc_z                      0.3361     2.9757    0.1722     0.656
-FWdc_z:ns(tmid, df = 3)1    1.2847     0.7784    0.7772     2.124
-FWdc_z:ns(tmid, df = 3)2    8.3518     0.1197    2.0252    34.443
-FWdc_z:ns(tmid, df = 3)3    4.7988     0.2084    2.0197    11.402
+           exp(coef) exp(-coef) lower .95 upper .95
+FWdc_z        0.5537     1.8059    0.4561    0.6723
+tt(FWdc_z)    1.0124     0.9877    1.0055    1.0193
 
-Concordance= 0.585  (se = 0.012 )
-Likelihood ratio test= 78.1  on 5 df,   p=2e-15
-Wald test            = 76.38  on 5 df,   p=5e-15
-Score (logrank) test = 76.31  on 5 df,   p=5e-15
+Concordance= 0.587  (se = 0.012 )
+Likelihood ratio test= 70.51  on 2 df,   p=5e-16
+Wald test            = 69.29  on 2 df,   p=9e-16
+Score (logrank) test = 68.95  on 2 df,   p=1e-15
 
 
 -----------------------------------
- CoxPH Model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Linear time interaction with Sex) 
+ CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:tt(Age)) 
 -----------------------------------
 Call:
-coxph(formula = Surv(tstart, tstop, event) ~ Sex + FWdc_z + FWdc_z:logtmid + 
-    Sex:tmid, data = ds)
+coxph(formula = Surv(Age, event) ~ Sex + FWdc_z + tt(FWdc_z), 
+    data = monsurv, tt = function(x, t, ...) x * t)
 
-  n= 22710, number of events= 876 
+  n= 876, number of events= 876 
 
-                    coef exp(coef)  se(coef)      z Pr(>|z|)    
-SexFemale      -0.211052  0.809732  0.210655 -1.002 0.316400    
-FWdc_z         -1.123897  0.325011  0.236430 -4.754    2e-06 ***
-FWdc_z:logtmid  0.278294  1.320874  0.073461  3.788 0.000152 ***
-SexMale:tmid   -0.013129  0.986957  0.007795 -1.684 0.092148 .  
-SexFemale:tmid        NA        NA  0.000000     NA       NA    
+                coef exp(coef)  se(coef)      z Pr(>|z|)    
+SexFemale   0.117959  1.125198  0.073268  1.610 0.107408    
+FWdc_z     -0.565423  0.568120  0.100197 -5.643 1.67e-08 ***
+tt(FWdc_z)  0.012115  1.012189  0.003469  3.492 0.000479 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-               exp(coef) exp(-coef) lower .95 upper .95
-SexFemale         0.8097     1.2350    0.5358    1.2236
-FWdc_z            0.3250     3.0768    0.2045    0.5166
-FWdc_z:logtmid    1.3209     0.7571    1.1438    1.5254
-SexMale:tmid      0.9870     1.0132    0.9720    1.0022
-SexFemale:tmid        NA         NA        NA        NA
+           exp(coef) exp(-coef) lower .95 upper .95
+SexFemale     1.1252     0.8887    0.9747    1.2990
+FWdc_z        0.5681     1.7602    0.4668    0.6914
+tt(FWdc_z)    1.0122     0.9880    1.0053    1.0191
 
-Concordance= 0.593  (se = 0.012 )
-Likelihood ratio test= 75.04  on 4 df,   p=2e-15
-Wald test            = 74.45  on 4 df,   p=3e-15
-Score (logrank) test = 74.02  on 4 df,   p=3e-15
+Concordance= 0.587  (se = 0.012 )
+Likelihood ratio test= 73.11  on 3 df,   p=9e-16
+Wald test            = 71.47  on 3 df,   p=2e-15
+Score (logrank) test = 71.39  on 3 df,   p=2e-15
 
 
 -----------------------------------
- CoxPH Model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Logarithmic time interaction with Sex) 
+ CoxPH Model(Forewing discal cell + Forewing discal cell:log(tt(Age))) 
 -----------------------------------
 Call:
-coxph(formula = Surv(tstart, tstop, event) ~ Sex + FWdc_z + FWdc_z:logtmid + 
-    Sex:logtmid, data = ds)
+coxph(formula = Surv(Age, event) ~ FWdc_z + tt(FWdc_z), data = monsurv, 
+    tt = function(x, t, ...) x * log(t))
 
-  n= 22710, number of events= 876 
+  n= 876, number of events= 876 
 
-                      coef exp(coef) se(coef)      z Pr(>|z|)    
-SexFemale         -1.05856   0.34695  0.48244 -2.194   0.0282 *  
-FWdc_z            -1.18160   0.30679  0.23476 -5.033 4.82e-07 ***
-FWdc_z:logtmid     0.29653   1.34519  0.07301  4.062 4.88e-05 ***
-SexFemale:logtmid  0.37512   1.45517  0.15163  2.474   0.0134 *  
+               coef exp(coef) se(coef)      z Pr(>|z|)    
+FWdc_z     -1.07782   0.34034  0.24015 -4.488 7.18e-06 ***
+tt(FWdc_z)  0.25532   1.29087  0.07434  3.434 0.000594 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-                  exp(coef) exp(-coef) lower .95 upper .95
-SexFemale            0.3470     2.8822    0.1348    0.8932
-FWdc_z               0.3068     3.2596    0.1936    0.4860
-FWdc_z:logtmid       1.3452     0.7434    1.1658    1.5521
-SexFemale:logtmid    1.4552     0.6872    1.0811    1.9588
+           exp(coef) exp(-coef) lower .95 upper .95
+FWdc_z        0.3403     2.9383    0.2126    0.5449
+tt(FWdc_z)    1.2909     0.7747    1.1158    1.4934
 
-Concordance= 0.595  (se = 0.012 )
-Likelihood ratio test= 78.25  on 4 df,   p=4e-16
-Wald test            = 78.29  on 4 df,   p=4e-16
-Score (logrank) test = 77.58  on 4 df,   p=6e-16
+Concordance= 0.587  (se = 0.012 )
+Likelihood ratio test= 69.49  on 2 df,   p=8e-16
+Wald test            = 68.53  on 2 df,   p=1e-15
+Score (logrank) test = 68.08  on 2 df,   p=2e-15
+
+
+-----------------------------------
+ CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age))) 
+-----------------------------------
+Call:
+coxph(formula = Surv(Age, event) ~ Sex + FWdc_z + tt(FWdc_z), 
+    data = monsurv, tt = function(x, t, ...) x * log(t))
+
+  n= 876, number of events= 876 
+
+               coef exp(coef) se(coef)      z Pr(>|z|)    
+SexFemale   0.12176   1.12948  0.07330  1.661 0.096677 .  
+FWdc_z     -1.05050   0.34976  0.24118 -4.356 1.33e-05 ***
+tt(FWdc_z)  0.25321   1.28816  0.07443  3.402 0.000669 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+           exp(coef) exp(-coef) lower .95 upper .95
+SexFemale     1.1295     0.8854    0.9783    1.3040
+FWdc_z        0.3498     2.8591    0.2180    0.5611
+tt(FWdc_z)    1.2882     0.7763    1.1133    1.4905
+
+Concordance= 0.587  (se = 0.012 )
+Likelihood ratio test= 72.25  on 3 df,   p=1e-15
+Wald test            = 70.86  on 3 df,   p=3e-15
+Score (logrank) test = 70.68  on 3 df,   p=3e-15
 

@@ -3,7 +3,31 @@ Monarch Manuscript Diagnostics of Cox Proportional Hazards Models
 
 
 -----------------------------------
- Diagnostics of CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell) 
+ Diagnostics of CoxPH model(Forewing discal cell) 
+-----------------------------------
+       chisq df      p
+FWdc_z     7  1 0.0081
+GLOBAL     7  1 0.0081
+
+-----------------------------------
+ Diagnostics of CoxPH model(Forewing discal cell + Size) 
+-----------------------------------
+       chisq df      p
+Sex     1.81  1 0.1790
+FWdc_z  6.71  1 0.0096
+GLOBAL 12.34  2 0.0021
+
+-----------------------------------
+ Diagnostics of CoxPH model(Forewing discal cell + Sex + Forewing discal cell:Age) 
+-----------------------------------
+            chisq df     p
+Sex          6.43  1 0.011
+FWdc_z       5.45  1 0.020
+FWdc_z:tmid  0.85  1 0.357
+GLOBAL      10.47  3 0.015
+
+-----------------------------------
+ Diagnostics of CoxPH model(Forewing discal cell + Sex + Forewing discal cell:logAge) 
 -----------------------------------
                  chisq df      p
 Sex             5.8216  1 0.0158
@@ -12,7 +36,7 @@ FWdc_z:logtmid  0.0537  1 0.8168
 GLOBAL         12.3709  3 0.0062
 
 -----------------------------------
- Diagnostics of CoxPH model(Forewing discal cell + Sex + Logarithmic time interaction with Forewing discal cell + Logarithmic time interaction with Sex) 
+ Diagnostics of CoxPH model(Forewing discal cell + Sex + Forewing discal cell:logAge + Size:logAge) 
 -----------------------------------
                   chisq df       p
 Sex            3.68e-01  1 0.54425

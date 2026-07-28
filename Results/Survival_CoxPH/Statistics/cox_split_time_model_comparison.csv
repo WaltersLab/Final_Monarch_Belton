@@ -1,0 +1,8 @@
+Model,Predictors,df,AIC,delta_AIC,Comparison,LRT,LRT_df,p_value
+M1,Size,1,10071.4023,14.6009,NA,NA,NA,NA
+M2,Size + Sex,2,10070.4266,13.6252,M1 vs M2: + Sex,2.9757,1,0.0845
+M3,Size + Size × Time,2,10060.5442,3.7428,M1 vs M3: + Size × Time,12.8581,1,3e-4
+M4,Size + Size × Time + Sex,3,10059.9498,3.1484,M3 vs M4: + Sex,2.5944,1,0.1072
+M5,Size + Size × log(Time),2,10061.6007,4.7993,M1 vs M5: + Size × log(Time),11.8016,1,6e-4
+M6,Size + Size × log(Time) + Sex,3,10060.8295,4.0282,M5 vs M6: + Sex,2.7711,1,0.096
+M7,Size + Size × log(Time) + Sex + Sex × log(Time),4,10056.8014,0,M6 vs M7: + Sex × log(Time),6.0282,1,0.0141

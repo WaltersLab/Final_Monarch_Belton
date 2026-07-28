@@ -1,0 +1,22 @@
+PARAMETRIC ANALYSES
+ =================================
+
+
+====================================
+ Parametric Model Comparison Table 
+====================================
+# A tibble: 4 × 7
+  model_name   family   formula          npars logLik   AIC   BIC
+  <chr>        <chr>    <chr>            <int>  <dbl> <dbl> <dbl>
+1 wb_shape_sex Weibull  ~1 ; shape~Sex       3 -3202. 6410. 6424.
+2 wb_full_sex  Weibull  ~Sex ; shape~Sex     4 -3201. 6411. 6430.
+3 gp_shape_sex Gompertz ~1 ; shape~Sex       3 -3301. 6608. 6622.
+4 gp_full_sex  Gompertz ~Sex ; shape~Sex     4 -3300. 6608. 6627.
+
+====================================
+ AIC/BIC Differences (Gompertz - Weibull) 
+====================================
+                    AIC      BIC
+~ Sex + FWdc_z 210.3616 210.3616
+~ Sex          195.7476 195.7476
+~ 1            192.4499 192.4499
