@@ -9,7 +9,7 @@ embed-resources: true
 number-sections: true
 ---
 
-## Setting up
+# Setting up
 
 ```{r}
 library(flexsurv)
@@ -25,7 +25,7 @@ library(reporter)
 library(gtsummary)
 ```
 
-# Load previously 'cleaned' dataset
+## Load previously 'cleaned' dataset
 
 ```{r}
 load(file = "../Input_Data/monsurv.Rdata")
@@ -104,7 +104,8 @@ cat(
 
 ## Graphics
 
-Before I start creating plots, I set up the custom theme and custom color palette that is continuous in my plots of monarch. \## Custom theme
+Before I start creating plots, I set up the custom theme and custom color palette that is continuous in my plots of monarch. 
+## Custom theme
 
 ```{r}
 theme_monarch <- theme_bw(base_size = 12) +
@@ -116,13 +117,13 @@ theme_monarch <- theme_bw(base_size = 12) +
   )
 ```
 
-### Graph systematics
+## Graph systematics
 
 ```{r}
 sex_colors <- c("Male" = "dodgerblue","Female" = "firebrick2")
 ```
 
-## Sex Comparison of Survival
+# Sex Comparison of Survival
 
 ## Create Survival Object
 
@@ -138,7 +139,7 @@ print(survMon.diff)
 save_file(survMon.diff,"Kaplan-Mier statistics", survival_stats)
 ```
 
-#### Find the p-value
+### Find the p-value
 
 ```{r}
 p <- survMon.diff$pvalue
@@ -171,7 +172,7 @@ survivorship_plot <- ggsurvplot(
 print(survivorship_plot)
 ```
 
-#### Save Kaplan-Meier Plot
+### Save Kaplan-Meier Plot
 
 ```{r}
 ggsave(
@@ -186,9 +187,9 @@ ggsave(
 
 # Mortality rate visualization
 
-### Calculate qx ()
+## Calculate qx ()
 
-##### Summarize previous survfit
+### Summarize previously created survfit
 
 ```{r}
 mon_sum <- summary(monsurv.fit)
@@ -233,7 +234,7 @@ mortality_plot <- (qxplot / qxLogplot)
 mortality_plot
 ```
 
-#### Save mortality plot
+### Save mortality plot
 
 ```{r}
 ggsave(
@@ -246,7 +247,7 @@ ggsave(
 )
 ```
 
-### Generate smoothed hazard rates via muhaz by sex
+## Generate smoothed hazard rates via muhaz by sex
 
 Use the muhaz package to get kernal-density smoothing of hazard rates. We will only estimate hazard rates up to day 45, because otherwise there is not sufficient data (e.g. remaining individuals) to estimate values with acceptable accuracy.
 
@@ -280,6 +281,7 @@ haz_df <- rbind(
 )
 ```
 
+### Visualize muhaz by sex
 ```{r}
 muhaz <- ggplot(haz_df, aes(x = age, y = hazard, color = Sex)) +
   geom_line() +
@@ -297,7 +299,7 @@ log_muhaz <- ggplot(haz_df, aes(x = age, y = loghaz, color = Sex)) +
 full_muhaz <- muhaz / log_muhaz
 full_muhaz
 ```
-Save plot
+### Save smoothed muhaz plot
 ```{r}
 ggsave(
   "../Results/Survival_CoxPH/Figures/Figure_03_smoothed_muhaz_hazard_plots.jpg",
@@ -310,7 +312,7 @@ ggsave(
 ```
 
 
-### Now we can overlay manually calculated qx with the smoothed estimates.
+### Plot overlaying manually calculated qx with the smoothed estimates.
 ```{r}
 liftab.sex <- split(mon_sum_DF, mon_sum_DF$strata)
 
@@ -336,9 +338,9 @@ points(log(liftab.sex$Male$qx) ~ liftab.sex$Male$x,
 dev.off()
 
 ```
-# CoxPH modeling
+# CoxPH modeling with wing-length
 
-### Modeling using winglength
+## Modeling using wing-length
 
 ```{r}
 m0_nosex <- coxph(Surv(Age, event) ~ WingLength, data = monsurv)
@@ -346,7 +348,7 @@ sum_m0_nosex <- summary(m0_nosex)
 save_file(sum_m0_nosex,"CoxPH model(WingLength)", coxph_stats)
 ```
 
-### Model with winglength and sex
+## Model with wing-length and sex
 
 ```{r}
 m0_sex <- coxph(Surv(Age, event) ~ Sex + WingLength, data = monsurv)
@@ -354,16 +356,14 @@ sum_m0_sex <- summary(m0_sex)
 save_file(sum_m0_sex,"CoxPH model(WingLength + Sex)", coxph_stats)
 ```
 
-### ANOVA comparison of the two previous models
+## ANOVA comparison of the two previous models
 
 ```{r}
 anova_one <- anova(m0_nosex, m0_sex, test="LRT")
 save_file(anova_one,"Anova Comparison CoxPH model(WingLength) vs. CoxPH model(WingLength + Sex)", anova_stats)
 ```
 
-## Contrast survival between males WITH winglength vs MISSING winglength
-
-### Plot KM for two groups males
+## Contrast survival between males WITH wing-length vs MISSING wing-length, using KM plot
 
 ```{r}
 monsurv$male_group <- NA
@@ -389,7 +389,7 @@ male_plot <- ggsurvplot(
 print(male_plot)
 ```
 
-#### Save male_plot
+### Save male_plot
 
 ```{r}
 ggsave(
@@ -410,25 +410,23 @@ print(km_test)
 save_file(km_test,"Kaplan-Mier statistics for males data", survival_stats)
 ```
 
-## CoxPH with Forward Discal Cell
+# CoxPH with Forward Discal Cell
 
-### Standard fit
+## Standard fit
 
-Run CoxPH using Sex and normalized size (the z-transfromed forward wing discal cell length) as predictors. First fit model with without sex, then add sex.
-
+Run CoxPH using Sex and normalized size (the z-transformed forward wing discal cell length) as predictors. 
+## Model with only size.
 ```{r}
 m0_nosex <- coxph(Surv(Age, event) ~ FWdc_z, data = monsurv)
-m0_sex <- coxph(Surv(Age, event) ~ Sex + FWdc_z, data = monsurv)
-
 summary(m0_nosex)
 ```
-
+## Model with size + sex.
 ```{r}
+m0_sex <- coxph(Surv(Age, event) ~ Sex + FWdc_z, data = monsurv)
 summary(m0_sex)
 ```
 
-Perform LRT via anova to see if there is a significantly better fit with Sex.This is not the case.
-
+## Perform LRT via anova to see if there is a significantly better fit with Sex.This is not the case.
 ```{r}
 anova(m0_nosex, m0_sex, test="LRT")
 ```
@@ -1068,21 +1066,27 @@ kbl(model_test_tbl) %>%  kable_classic("striped") %>%
 ```
 
 ```{r}
-## Panel A: Female/Male hazard ratio: already created previously.
-
-
-## Panel B: Log(qx): I have to adjust it here, thus I'm calling it again
+## Panel A: Female/Male hazard ratio
+hazard_ratio_plot <- ggplot(df, aes(age, hazard_ratio)) +
+  geom_line() +
+  geom_hline(yintercept = 1, linetype = 2, color = "red") +
+  labs(
+    x = "Age",
+    y = "Female / Male Hazard Ratio"
+  ) +
+  theme_bw() + ggtitle('A')
+## Panel B: qx
 qxLogplot <- ggplot(mon_sum_DF, aes(x = x, y = log(qx), color = strata)) +
   geom_line() +
   geom_point(size = 1) +
   scale_color_manual(values = sex_colors) +
   labs(x = "Age",
-       y = "Mortality") +
+       y = "Log(Mortality)") +
   xlim(0, 45) +
   theme_bw() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") + ggtitle('B')
 
-## Panel C: Smoothed log hazard: I have to adjust it slightly so I call it again here.
+## Panel C: Smoothed log hazard
 haz_df <- rbind(
   data.frame(
     age = haz_female$est.grid,
@@ -1101,11 +1105,11 @@ log_muhaz <- ggplot(haz_df, aes(x = age, y = loghaz, color = Sex)) +
   scale_color_manual(values = sex_colors) +
   labs(
     x = "Age",
-    y = "Mortality"
+    y = "Log(Mortality)"
   ) +
   coord_cartesian(ylim = c(-8, 0)) +
   theme_bw() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") + ggtitle('C')
 
 
 final_fig <-
