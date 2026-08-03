@@ -20,3 +20,26 @@ PARAMETRIC ANALYSES
 ~ Sex + FWdc_z 210.3616 210.3616
 ~ Sex          195.7476 195.7476
 ~ 1            192.4499 192.4499
+
+====================================
+ Weibull vs Gompertz model comparison (main + shape models) 
+====================================
+# A tibble: 4 × 5
+  model             npars logLik   AIC   BIC
+  <chr>             <int>  <dbl> <dbl> <dbl>
+1 M4_shape_sex_size     6 -3178. 6368. 6397.
+2 M3_shape_size         5 -3181. 6371. 6395.
+3 M1_main_only          4 -3186. 6380. 6399.
+4 M2_shape_sex          5 -3185. 6381. 6405.
+
+====================================
+ Likelihood ratio tests: shape parameter models 
+====================================
+# A tibble: 5 × 5
+  comparison Description        lrt    df        p
+  <chr>      <chr>            <dbl> <int>    <dbl>
+1 M2vM1      Sex vs Null       1.20     1 0.273   
+2 M3vM1      Size vs Null     10.8      1 0.00104 
+3 M4vM2      Both vs SexOnly  15.0      1 0.000107
+4 M4vM3      Both vs SizeOnly  5.46     1 0.0194  
+5 M4vM1      Both vs Null     16.2      2 0.000302

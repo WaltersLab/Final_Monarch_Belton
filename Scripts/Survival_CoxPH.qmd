@@ -883,6 +883,7 @@ m_nosex_tt_lin <- coxph(
 )
 m_nosex_tt_lin_sum <- summary(m_nosex_tt_lin)
 save_file(m_nosex_tt_lin_sum,"CoxPH Model(Forewing discal cell + Forewing discal cell:tt(Age))", coxph_stats)
+print(m_nosex_tt_lin_sum)
 ```
 
 ```{r}
@@ -893,6 +894,7 @@ m_tt_lin <- coxph(
 )
 m_tt_lin_sum <- summary(m_tt_lin)
 save_file(m_tt_lin_sum,"CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:tt(Age))", coxph_stats)
+print(m_tt_lin_sum)
 ```
 
 ### tt() Logarithmic fit
@@ -907,6 +909,7 @@ m_nosex_tt_log <- coxph(
 )
 m_nosex_tt_log_sum <- summary(m_nosex_tt_log)
 save_file(m_nosex_tt_log_sum,"CoxPH Model(Forewing discal cell + Forewing discal cell:log(tt(Age)))", coxph_stats)
+print(m_nosex_tt_log_sum)
 ```
 
 Log with Sex
@@ -919,7 +922,20 @@ m_tt_log <- coxph(
 )
 m_tt_log_sum <- summary(m_tt_log)
 save_file(m_tt_log_sum,"CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age)))", coxph_stats)
+print(m_tt_log_sum)
 ```
+```{r}
+monsurv$Male <- as.numeric(monsurv$Sex == "Male")
+m_tt_sex_log <- coxph(
+  Surv(Age, event) ~ Sex + FWdc_z + tt(FWdc_z) + tt(Male),
+  data = monsurv,
+  tt = function(x, t, ...) x * log(t)
+)
+m_tt_sex_log_sum <- summary(m_tt_sex_log)
+save_file(m_tt_log_sum,"CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age)) + Sex:log(tt(Age)))", coxph_stats)
+print(m_tt_sex_log_sum)
+```
+
 
 ### tt() model comparsions
 
@@ -930,14 +946,23 @@ Sex is not significant in the linear model comparison.
 ```{r}
 anova_ten <- anova(m_nosex_tt_lin, m_tt_lin, test="LRT")
 save_file(anova_ten,"Anova Comparison CoxPH Model(Forewing discal cell + Forewing discal cell:tt(Age)) vs. CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:tt(Age))", anova_stats)
+print(anova_ten)
 ```
 
 ```{r}
 anova_eleven <- anova(m_nosex_tt_log, m_tt_log, test="LRT")
-save_file(anova_ten,"Anova Comparison CoxPH Model(Forewing discal cell + Forewing discal cell:log(tt(Age))) vs. CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age)))", anova_stats)
+save_file(anova_eleven,"Anova Comparison CoxPH Model(Forewing discal cell + Forewing discal cell:log(tt(Age))) vs. CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age)))", anova_stats)
+print(anova_eleven)
 ```
 
 Sex is not significant in the logarithmic model comparison.
+
+```{r}
+anova_twelve <- anova(m_tt_log, m_tt_sex_log, test="LRT")
+save_file(anova_twelve,"Anova Comparison CoxPH Model(Forewing discal cell + Forewing discal cell:log(tt(Age))) vs. CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age)) + Size:log(tt(Age)))", anova_stats)
+print(anova_twelve)
+```
+
 
 ## Compare models via AIC
 
@@ -946,7 +971,7 @@ We can’t compare between linear versus log with LRT because they have the same
 ```{r}
 aic <- AIC(m0_nosex, m0_sex, 
            m_nosex_tt_lin, m_tt_lin, 
-           m_nosex_tt_log, m_tt_log)
+           m_nosex_tt_log, m_tt_log, m_tt_sex_log)
 
 kbl(aic) %>%  kable_classic("striped") %>% 
   scroll_box(width = "60%")
@@ -1053,7 +1078,7 @@ qxLogplot <- ggplot(mon_sum_DF, aes(x = x, y = log(qx), color = strata)) +
   scale_color_manual(values = sex_colors) +
   labs(x = "Age",
        y = "Mortality") +
-  coord_cartesian(xlim = c(0, 45)) +
+  xlim(0, 45) +
   theme_bw() +
   theme(legend.position = "none")
 
@@ -1075,7 +1100,7 @@ log_muhaz <- ggplot(haz_df, aes(x = age, y = loghaz, color = Sex)) +
   geom_line() +
   scale_color_manual(values = sex_colors) +
   labs(
-    x = "Days",
+    x = "Age",
     y = "Mortality"
   ) +
   coord_cartesian(ylim = c(-8, 0)) +

@@ -15,10 +15,12 @@ number-sections: true
 library(flexsurv)
 library(ggplot2)
 library(tidyverse)
-library(ggfortify)# for `autoplot` with survfit
+library(ggfortify)
 library(survminer)
 library(kableExtra)
 library(muhaz)
+library(patchwork)
+library(splines)
 ```
 
 ## Load previously 'cleaned' dataset
@@ -27,7 +29,7 @@ library(muhaz)
 load(file = "../Input_Data/monsurv.Rdata")
 ```
 
-## Initalize statistics output file
+## Initialize statistics output file
 
 ```{r}
 stats_file <- "../Results/Parametric_Monarch/Statistics/parametric_results.txt"
@@ -56,9 +58,40 @@ save_output <- function(object, label, file){
 }
 ```
 
+## Set colors for later data visualization and overlay the predicted model fits 
+```{r}
+sex_cols <- c(
+  Male="dodgerblue",
+  Female="firebrick2"
+)
+
+model_cols <- c(
+  Weibull="forestgreen",
+  Gompertz="purple"
+)
+
+size_cols <- c(
+  Small="forestgreen",
+  Average="darkorange2",
+  Large="mediumpurple3"
+)
+tgrid <- seq(
+  from = min(monsurv$Age, na.rm = TRUE),
+  to   = max(monsurv$Age, na.rm = TRUE),
+  length.out = 200
+)
+curve_types <- c(
+  Observed = "solid",
+  Fitted = "dashed"
+)
+myLwd <- 2
+myLty <- 2
+```
+
+
 # Choose Model Family
 
-We need to decide whether to use a Gompertz or Weibull survival model. To do this, we will fit three models using each family, and compare them. The three models are:
+We need to decide whether to use a Gompertz or Weibull survival model. To do this, we will fit three models using each distribution, and compare them. The three models are:
 
 -   Null (`~ 1`)
 
@@ -120,7 +153,7 @@ fit_wb_sex_size <- flexsurvreg(
 )
 ```
 
-### Shape models:Gompertz and Weibull
+### Adding shape models:Gompertz and Weibull
 
 ```{r}
 fit_wb_shape_sex <- flexsurvreg(
@@ -184,8 +217,8 @@ save_output(
   stats_file
 )
 ```
-
-### Main model comparison
+## Compare model families
+### Quantitative comparison
 
 ```{r}
 fit_tbl <- tibble(
@@ -220,7 +253,7 @@ fit_tbl %>%
   scroll_box(width = "100%")
 ```
 
-### Delta AIC/BIC (Weibull vs Gompertz)
+### Delta AIC/BIC (Gompertz-Weibull) to determine whether Gompertz or Weibull gives a better fit. Weibull is quantifiably a better fit that Gompertz across models.
 ```{r}
 modelDeltas <- matrix(nrow = 3, ncol = 2)
 rownames(modelDeltas) <- unique(fit_tbl$formula)
@@ -236,7 +269,7 @@ for (form in unique(fit_tbl$formula)) {
 
 modelDeltas |> kbl() %>%  kable_classic("striped", full_width = F)
 ```
-
+ Smaller AIC/BIC values are better, and a difference >10 indicates strongly improved model fit.
 ```{r}
 save_output(
   modelDeltas,
@@ -246,8 +279,6 @@ save_output(
 ```
 
 
-It is clear that the Weibull is doing a much better job of fitting the data. Smaller AIC/BIC values are better, and a difference \>10 indicates strongly improved model fit.
-
 ### Kaplan-Meier + model fits
 
 Next, we will visualize the model fits to the data as well. First, a basic Kaplan Meier fit.
@@ -256,122 +287,83 @@ Next, we will visualize the model fits to the data as well. First, a basic Kapla
 km_sex <- survfit(survMon ~ Sex, data = monsurv)
 ```
 
-Plot Kaplan Meier data visualization and overlay the predicted model fits (and save them).
+Plot Kaplan Meier data visualization and overlay the predicted model fits for Gompertz and Weibull, to see which one is the better fit.
 
 Note the use of lines(), which invokes the method lines.flexsurvreg() function to add fitted lines to the existing Kaplan Meier plot. This is a handy convenience function! It is important to specify newdata= in order to get seperate lines for each factor in Sex.
-
+Function for producing predicted model fit
 ```{r}
-colM <- "dodgerblue"
-colF <- "firebrick2"
-myCols <- c(colM, colF)
-myLwd <- 2
-myLty <- 2
+plot_survival <- function(fit, outfile) {
+
+  draw_plot <- function() {
+
+    par(
+      mar = c(4, 4, 0.5, 1),
+      cex.main = 0.85,
+      font.main = 1,
+      cex.lab = 0.8,
+      cex.axis = 0.8
+    )
+# Kaplan-Meier survivorship
+    plot(
+      km_sex,
+      col = sex_cols,
+      lwd = myLwd,
+      lty = c(1, 1),
+      conf.int = FALSE,
+      mark.time = FALSE,
+      xlim = c(0, max(monsurv$Age)),
+      ylim = c(0, 1),
+      xlab = "Age",
+      ylab = "Survival probability"
+    )
+# predicted model fit
+    lines(
+      fit,
+      newdata = data.frame(Sex = levels(monsurv$Sex)),
+      col = sex_cols,
+      lty = c(3, 3),
+      lwd = 1.2
+    )
+
+    legend(
+      "topright",
+      legend = c("Male", "Female", "Observed", "Fitted"),
+      col = c(sex_cols["Male"], sex_cols["Female"], "black", "black"),
+      lty = c(1, 1, 1, 3),
+      lwd = c(2, 2, 1.2, 1.2),
+      bty = "n",
+      cex = 0.7
+    )
+  }
+
+  ## Visualize in script
+  draw_plot()
+
+  ## Save to file
+  jpeg(outfile, width = 90, height = 75, units = "mm", res = 300)
+  draw_plot()
+  dev.off()
+}
 ```
 
-
+### Plot Gompertz and Weibull against Kaplan Meier using same base model for both
+Gompertz
 ```{r}
-jpeg(
-  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.png",
-  width = 90,
-  height = 75,
-  units = "mm",
-  res = 300
-)
-
-par(
-  mar = c(4,4,0.5,1),
-  cex.main = 0.85,
-  font.main = 1,
-  cex.lab = 0.8,    # smaller xlab and ylab
-  cex.axis = 0.8
-)
-
-plot(
-  km_sex,
-  col = myCols,
-  lwd = myLwd,
-  conf.int = FALSE,
-  mark.time = FALSE,
-  xlim = c(0, max(monsurv$Age)),
-  ylim = c(0, 1),
-  xlab = "Age (days)",
-  ylab = "Survival probability"
-)
-lines(
+gomp <- plot_survival(
   fit_gp_sex,
-  newdata = data.frame(Sex = levels(monsurv$Sex)),
-  col = c("dodgerblue", "firebrick2"),
-  lty = c(3, 3),   # dotted
-  lwd = 1.2
+  "../Results/Parametric_Monarch/Figures/Figure_01_Gompertz.png"
 )
-
-legend(
-  "topright",
-  legend = c("Male", "Female", "Observed", "Fitted"),
-  col = c("dodgerblue", "firebrick2", "black", "black"),
-  lty = c(1, 1, 1, 3),
-  lwd = c(2, 2, 1.2, 1.2),
-  bty = "n",
-  cex = 0.7
-)
-
-dev.off()
 ```
-
-
+Weibull
 ```{r}
-jpeg(
-  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.png",
-  width = 90,
-  height = 75,
-  units = "mm",
-  res = 300
-)
-
-par(
-  mar = c(4,4,0.5,1),
-  cex.main = 0.85,
-  font.main = 1,
-  cex.lab = 0.8,    
-  cex.axis = 0.8
-)
-
-## 1. Observed KM curves FIRST (this creates the plot region)
-plot(
-  km_sex,
-  col = c("dodgerblue", "firebrick2"),
-  lty = c(1, 1),
-  lwd = 2,
-  conf.int = FALSE,
-  mark.time = FALSE,
-  xlim = c(0, max(monsurv$Age)),
-  ylim = c(0, 1),
-  xlab = "Days Since Eclosion",
-  ylab = "Survival probability"
-)
-
-## 2. Fitted curves ON TOP
-lines(
+weib <- plot_survival(
   fit_wb_sex,
-  newdata = data.frame(Sex = levels(monsurv$Sex)),
-  col = c("dodgerblue", "firebrick2"),
-  lty = c(3, 3),   # dotted
-  lwd = 1.2
+  "../Results/Parametric_Monarch/Figures/Figure_02_Weibull.png"
 )
-
-## 3. Legend
-legend(
-  "topright",
-  legend = c("Male", "Female", "Observed", "Fitted"),
-  col = c("dodgerblue", "firebrick2", "black", "black"),
-  lty = c(1, 1, 1, 3),
-  lwd = c(2, 2, 1.2, 1.2),
-  bty = "n",
-  cex = 0.7
-)
-
-dev.off()
+print(weib)
 ```
+
+
 In this visual contrast, the Weibull model is clearly a better fit, consistent with the AIC & BIC results.
 
 ### Hazard smoothing (muhaz)
@@ -423,7 +415,7 @@ smoothedhazard <- ggplot() +
     aes(x = time, y = log(hazard), colour = Sex),
     linewidth = 1
   ) + theme_bw() +
-  scale_color_manual(values = rev(myCols)) +
+  scale_color_manual(values = rev(sex_cols)) +
   ggtitle("Smoothed Hazard Rates")
 print(smoothedhazard)
 ```
@@ -446,12 +438,6 @@ ggsave(
 Now we use the models to obtain predicted values of hazard rates across the relevant time range.
 
 ```{r}
-tgrid <- seq(
-  from = min(monsurv$Age, na.rm = TRUE),
-  to   = max(monsurv$Age, na.rm = TRUE),
-  length.out = 200
-)
-
 sex_levels <- levels(monsurv$Sex)
 
 # Weibull predictions
@@ -496,7 +482,7 @@ pred_haz_df <- bind_rows(wb_pred_df, gp_pred_df) #%>% filter(est > 0)
 
 ### Plot smoothed vs predicted values
 
-And with both “smoothed” values from the data, and the predicted values from the models, we can overlay them. It becomes very apparent that the Weibull is a better fit to the data, even just when we are considering Sex without any size variation.
+And with both “smoothed” values from the data, and the predicted values from the models, we can overlay them. It becomes very apparent that the Weibull is a better fit to the data, even just when we are considering **sex** without any **size** variation.
 
 ```{r}
 predicted_smoothed <- ggplot() +
@@ -512,13 +498,14 @@ predicted_smoothed <- ggplot() +
     aes(x = time, y = log(est), color = model),
     linewidth = 1
   ) +
+  scale_color_manual(values = model_cols) +
   facet_wrap(~Sex) +
   labs(
     x = "Age (days)",
-    y = "log(Hazard)",
+    y = "log(Hazard)"
   ) +
   theme_bw()
-print(predicted_smoothed)
+predicted_smoothed
 ```
 
 #### Save 'predicted_smoothed' plot
@@ -548,9 +535,9 @@ We will focus on 4 models:
 
 -   M4: M1 + Sex + Size on shape
 
-In this framework, we are already assuming (i.e. not testing for) a “main” effect on scale from both Sex and Size. In other words, our “null” model starts with an assumption of these two parameters impacting the survival.
+In this framework, we are already assuming (i.e. not testing for) a “main” effect on scale from both **sex** and **size**. In other words, our “null” model starts with an assumption of these two parameters impacting the survival.
 
-What we are most keen to assess is whether adding Sex as a predictor to shape provides a significant improvement to the model fit. This would provide evidence that Sex impacts the age-specific hazard function. Significant differences between M2 vs M1, or M4 vs M3, would indicate Sex is a significant factor in the age-specific hazard function.
+What we are most keen to assess is whether adding **sex** as a predictor to shape provides a significant improvement to the model fit. This would provide evidence that Sex impacts the age-specific hazard function. Significant differences between M2 vs M1, or M4 vs M3, would indicate Sex is a significant factor in the age-specific hazard function.
 
 ## Fit models
 
@@ -586,6 +573,13 @@ M4fit_wb_shape_both <- flexsurvreg(
   dist = "weibullPH"
 )
 ```
+
+## Printing out summary of our best fitting model (M4fit_wb_shape_both)
+```{r}
+print(M4fit_wb_shape_both)
+broom::tidy(M4fit_wb_shape_both)
+```
+
 
 ## Extract parameters
 
@@ -631,7 +625,7 @@ save_output(
 
 Using AIC, [the established precedent](https://stats.libretexts.org/Bookshelves/Advanced_Statistics/Intermediate_Statistics_with_R_(Greenwood)/08%3A_Multiple_linear_regression/8.13%3A_AICs_for_model_selection) is a difference \>2 is the basic threshold for a “significant” difference, and \>4 is “strong” support. BIC follows a [similar pattern](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
 
-Accordingly, AIC suggests that the “full” model (M4) with both `Sex` and `Size` is the best model overall, supporting the hypothesis that Sex is an important mediator of age-specific mortality. However, there is essentially no difference between models that include `Sex` as a predictor for shape versus the basic model (e.g.M1 vs M2).
+Accordingly, AIC suggests that the “full” model (M4) with both **sex** and **size** is the best model overall, supporting the hypothesis that Sex is an important mediator of age-specific mortality. However, there is essentially no difference between models that include **sex** as a predictor for shape versus the basic model (e.g.M1 vs M2).
 
 BIC contrasts with AIC, and does not indicate any meaningful improvement in model fit between M4 vs M3.
 
@@ -698,7 +692,256 @@ save_output(
 )
 ```
 
-The LRTs provide additional support for a significant effect of sex, so long as we have size already in the model. This makes some intuitive sense, because size and sex are strongly related, as males are larger than females. So to detect the effect of sex, we need to account for size in the model as well.
+The LRTs provide additional support for a significant effect of **sex**, so long as we have **size** already in the model. This makes some intuitive sense, because **size** and **sex** are strongly related, as males are larger than females. So to detect the effect of **sex**, we need to account for **size** in the model as well.
+### Convert survfit object to tidy data frame
+```{r}
+km_to_df <- function(km_fit){
+
+  data.frame(
+    time   = km_fit$time,
+    surv   = km_fit$surv,
+    strata = rep(names(km_fit$strata), km_fit$strata)
+  )
+
+}
+```
+
+```{r}
+predict_survival <- function(fit, newdata, tgrid){
+
+  pred_list <- summary(
+    fit,
+    newdata = newdata,
+    type = "survival",
+    t = tgrid
+  )
+
+  bind_rows(
+    lapply(seq_along(pred_list), function(i){
+
+      as.data.frame(pred_list[[i]]) |>
+        mutate(
+          Sex = newdata$Sex[i]
+        )
+
+    })
+
+  )
+
+}
+```
+
+
+### Plot of best fitting Weibull model, by **sex**
+```{r}
+# Kaplan-Meier curves (Sex only)
+km_df <-
+  km_to_df(km_sex) |>
+  mutate(
+    Sex = sub("^Sex=", "", strata),
+    CurveType = "Observed"
+  )
+
+mean_size <- mean(monsurv$FWdc_z)
+
+pred_df <-
+  predict_survival(
+    M4fit_wb_shape_both,
+    data.frame(
+      Sex = levels(monsurv$Sex),
+      FWdc_z = mean_size
+    ),
+    tgrid
+  ) |>
+  mutate(
+    CurveType = "Fitted"
+  )
+
+# Plot observed vs fitted
+weibull_sex <-
+
+ggplot() +
+
+  geom_step(
+    data = km_df,
+    aes(
+      time,
+      surv,
+      colour = Sex,
+      linetype = CurveType
+    ),
+    linewidth = 1
+  ) +
+
+  geom_line(
+    data = pred_df,
+    aes(
+      time,
+      est,
+      colour = Sex,
+      linetype = CurveType
+    ),
+    linewidth = 1.2
+  ) +
+
+  scale_color_manual(values = sex_cols) +
+
+  scale_linetype_manual(values = curve_types) +
+
+  labs(
+    x = "Age",
+    y = "Survival probability",
+    colour = "Sex",
+    linetype = NULL
+  ) +
+
+  theme_bw()
+
+weibull_sex
+```
+
+
+```{r}
+ggsave(
+  "../Results/Parametric_Monarch/Figures/Figure_05_parametric_by_sex.png",
+  plot = weibull_sex,
+  width = 180,    
+  height = 120,
+  units = "mm",
+  dpi = 300
+)
+```
+
+
+### Create size classes
+```{r}
+monsurv <-
+  monsurv |>
+  mutate(
+    SizeClass = cut(
+      FWdc_z,
+      breaks = quantile(
+        FWdc_z,
+        probs = c(0, 1/3, 2/3, 1),
+        na.rm = TRUE
+      ),
+      labels = c("Small", "Medium", "Large"),
+      include.lowest = TRUE
+    )
+  )
+
+# Kaplan-Meier curves by Sex + SizeClass
+
+km_fit <- survfit(
+  Surv(Age, event) ~ Sex + SizeClass,
+  data = monsurv
+)
+
+km_df <-
+  km_to_df(km_fit) |>
+  mutate(
+    strata = gsub("Sex=", "", strata),
+    strata = gsub(", SizeClass=", "_", strata)
+  ) |>
+  separate(
+    strata,
+    into = c("Sex", "SizeClass"),
+    sep = "_"
+  ) |>
+  mutate(
+    Type = "Observed"
+  )
+```
+
+```{r}
+mean_size <- mean(monsurv$FWdc_z)
+sd_size <- sd(monsurv$FWdc_z)
+
+newdata_pred <- expand.grid(
+  Sex = levels(monsurv$Sex),
+  SizeClass = c("Small", "Average", "Large")
+)
+
+newdata_pred$FWdc_z <- c(
+  mean_size - sd_size,
+  mean_size,
+  mean_size + sd_size
+)[match(
+  newdata_pred$SizeClass,
+  c("Small", "Average", "Large")
+)]
+
+pred_list <- summary(
+  M4fit_wb_shape_both,
+  newdata = newdata_pred,
+  type = "survival",
+  t = tgrid
+)
+
+pred_df <- bind_rows(
+  lapply(seq_along(pred_list), function(i){
+
+    as.data.frame(pred_list[[i]]) |>
+      mutate(
+        Sex = newdata_pred$Sex[i],
+        SizeClass = newdata_pred$SizeClass[i]
+      )
+
+  })
+)
+
+pred_df$Type <- "Fitted"
+```
+### Plot of best fitting Weibull model, by **size**
+```{r}
+weibull_size <-
+
+ggplot(
+  pred_df,
+  aes(
+    time,
+    est,
+    color = SizeClass,
+    linetype = SizeClass
+  )
+) +
+
+  geom_line(
+    linewidth = 1
+  ) +
+
+  facet_wrap(~Sex) +
+
+  scale_color_manual(values = size_cols
+  ) +
+
+  labs(
+    x = "Age",
+    y = "Survival probability",
+    color = "Size class",
+    linetype = "Size class"
+  ) +
+
+  coord_cartesian(
+    xlim = c(0, max(monsurv$Age)),
+    ylim = c(0, 1)
+  ) +
+
+  theme_bw()
+  
+weibull_size
+```
+
+```{r}
+ggsave(
+  "../Results/Parametric_Monarch/Figures/Figure_06_parametric_by_size.png",
+  plot = weibull_size,
+  width = 10,
+  height = 4,
+  dpi = 300
+)
+```
+
 
 ```{r}
 sessionInfo()

@@ -303,3 +303,30 @@ Likelihood ratio test= 72.25  on 3 df,   p=1e-15
 Wald test            = 70.86  on 3 df,   p=3e-15
 Score (logrank) test = 70.68  on 3 df,   p=3e-15
 
+
+-----------------------------------
+ CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age)) + Sex:log(tt(Age))) 
+-----------------------------------
+Call:
+coxph(formula = Surv(Age, event) ~ Sex + FWdc_z + tt(FWdc_z), 
+    data = monsurv, tt = function(x, t, ...) x * log(t))
+
+  n= 876, number of events= 876 
+
+               coef exp(coef) se(coef)      z Pr(>|z|)    
+SexFemale   0.12176   1.12948  0.07330  1.661 0.096677 .  
+FWdc_z     -1.05050   0.34976  0.24118 -4.356 1.33e-05 ***
+tt(FWdc_z)  0.25321   1.28816  0.07443  3.402 0.000669 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+           exp(coef) exp(-coef) lower .95 upper .95
+SexFemale     1.1295     0.8854    0.9783    1.3040
+FWdc_z        0.3498     2.8591    0.2180    0.5611
+tt(FWdc_z)    1.2882     0.7763    1.1133    1.4905
+
+Concordance= 0.587  (se = 0.012 )
+Likelihood ratio test= 72.25  on 3 df,   p=1e-15
+Wald test            = 70.86  on 3 df,   p=3e-15
+Score (logrank) test = 70.68  on 3 df,   p=3e-15
+
