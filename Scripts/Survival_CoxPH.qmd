@@ -450,7 +450,7 @@ czNoSex_plot <- plot(czNoSex, pch = 19, cex = 0.2,
      col = "red" , ylim = yLim)
 ```
 
-Save plot
+### Save plot
 ```{r}
 jpeg(
   filename = "../Results/Survival_CoxPH/Figures/Figure_06_size_coxph_diagnostics.jpg",
@@ -475,7 +475,7 @@ dev.off()
 ```
 
 
-Diagnostics for model with both size and sex.
+## Diagnostics for model with both size and sex.
 
 ```{r}
 cz0 <- cox.zph(m0_sex)
@@ -494,7 +494,7 @@ plot(cz0, var="FWdc_z", pch = 19, cex = 0.2,
      col = "red", ylim = yLim)
 ```
 
-Save plot
+### Save plot
 ```{r}
 jpeg(
   filename = "../Results/Survival_CoxPH/Figures/Figure_07_size_+_sex_coxph_diagnostics.jpg",
@@ -525,7 +525,8 @@ So we need to find some way to account for this time-dependency in the model.
 
 The Start-Stop Split-Time approach incorporates time-dependency in the model by appropriately capturing the “risk-set” comparisons through manually splitting the data set into many separate, time-limited, observations of survival. Here we create a new data structure were each row corresponds to a short interval of time.
 
-Doing this should give us the best of both worlds: correct management of “risk-set” comparisons while allowing model-testing and diagnostics. \### Create split
+Doing this should give us the best of both worlds: correct management of “risk-set” comparisons while allowing model-testing and diagnostics. 
+### Create split
 
 ```{r}
 cuts <- seq(0, max(monsurv$Age), by = 1)  # 1-day intervals
@@ -559,36 +560,40 @@ m_nosex_log_split <- coxph(Surv(tstart, tstop, event) ~ FWdc_z + FWdc_z:logtmid,
 m_log_split <- coxph(Surv(tstart, tstop, event) ~ Sex + FWdc_z + FWdc_z:logtmid, data = ds)
 ```
 
+## size model (ST)
 ```{r}
 m_nosex_split_sum <- summary(m_nosex_split)
 print(m_nosex_split_sum)
 save_file(m_nosex_split_sum,"CoxPH Model(Forewing discal cell)", coxph_stats)
 ```
-
+## size + sex model(ST)
 ```{r}
 m_sex_split_sum <- summary(m_sex_split)
 print(m_sex_split_sum)
 save_file(m_sex_split_sum,"CoxPH Model(Forewing discal cell + Sex)", coxph_stats)
 ```
-
+## Size + Size:Age model (ST)
 ```{r}
 m_nosex_linear_split_sum <- summary(m_nosex_linear_split)
 save_file(m_nosex_linear_split_sum,"CoxPH Model(Forewing discal cell + Forewing discal cell:Age)", coxph_stats)
 ```
 
+## Sex + Size + Size:Age model (ST)
 ```{r}
 m_linear_split_sum <- summary(m_linear_split)
 save_file(m_linear_split_sum,"CoxPH Model(Forewing discal cell + Sex + Forewing discal cell:Age)", coxph_stats)
 ```
 
+## Size + Size:log(Age) model (ST)
 ```{r}
 m_nosex_log_split_sum <- summary(m_nosex_log_split)
 save_file(m_nosex_log_split_sum,"CoxPH Model(Forewing discal cell + Forewing discal cell:logAge)", coxph_stats)
 ```
 
+## Sex + Size + Size:log(Age) model (ST)
 ```{r}
 m_log_split_sum <- summary(m_log_split)
-save_file(m_log_split_sum,"CoxPH Model(Forewing discal cell + Size + Forewing discal cell:logAge)", coxph_stats)
+save_file(m_log_split_sum,"CoxPH Model(Forewing discal cell + Sex + Forewing discal cell:logAge)", coxph_stats)
 ```
 
 ### Split model tests
@@ -674,7 +679,8 @@ However, we also need to inspect the diagnostics for each of these.
 
 We can examine the diagnostics for these model fits now. What we find in this case is that Sex now violates the diagnostics for both log and linear, seemingly invoking the mid-life shifts we observed in the plots of interval hazard rates.
 
-However, wingsize also significantly violates model assumptions of constant proportional hazards under the linear model. \### Diagnosing the linear model
+However, wingsize also significantly violates model assumptions of constant proportional hazards under the linear model. 
+### Diagnosing the linear model
 
 ```{r}
 linsplit.zph <- cox.zph(m_linear_split)
@@ -682,14 +688,14 @@ print(linsplit.zph)
 save_file(linsplit.zph,"Diagnostics of CoxPH model(Forewing discal cell + Sex + Forewing discal cell:Age)", diagnostics_stats)
 ```
 
-View plot in markdown
+### View plot in markdown
 
 ```{r linear_coxph_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
 par(mfrow = c(2,2))
 plot(linsplit.zph)
 ```
 
-Save plot
+### Save plot
 
 ```{r linear_coxph_plot}
 jpeg(
@@ -714,14 +720,14 @@ print(logsplit.zph)
 save_file(logsplit.zph,"Diagnostics of CoxPH model(Forewing discal cell + Sex + Forewing discal cell:logAge)", diagnostics_stats)
 ```
 
-View plot in markdown
+### View plot in markdown
 
 ```{r log_coxph_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
 par(mfrow = c(2,2))
 plot(logsplit.zph)
 ```
 
-Save plot
+### Save plot
 
 ```{r log_coxph_plot}
 jpeg(
@@ -738,7 +744,8 @@ plot(logsplit.zph)
 dev.off()
 ```
 
-Given that the log model appears to better fit the diagnostics, and that otherwise the models are basically equivalent by AIC, we will proceed with using the log model for wingsize time-dependence. \### Sex-time interaction This diagnostic result points to a time-varying component of Sex, which we can aim to capture with an additional interaction term between Sex and time. We will fit this with log-transformed time as well.
+Given that the log model appears to better fit the diagnostics, and that otherwise the models are basically equivalent by AIC, we will proceed with using the log model for wingsize time-dependence. 
+### Sex-time interaction This diagnostic result points to a time-varying component of Sex, which we can aim to capture with an additional interaction term between Sex and time. We will fit this with log-transformed time as well.
 
 ```{r}
 # Log-linear interaction
@@ -871,7 +878,8 @@ This is addressed in further detail in section 4.2 of the Time dependent analysi
 
 We can again fit all three versions of interactions between size and time. The problem here, as will see, is that this doesn’t allows us to examine the diagnostics with cox.zph(). Apparently, this diagnostic functiondoesn’t support models fit using tt().
 
-Nonetheless, we’ll do this: \### tt() linear Linear without Sex.
+Nonetheless, we’ll do this: 
+### tt() linear Linear without Sex.
 
 ```{r}
 m_nosex_tt_lin <- coxph(

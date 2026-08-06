@@ -174,7 +174,7 @@ Score (logrank) test = 68.05  on 2 df,   p=2e-15
 
 
 -----------------------------------
- CoxPH Model(Forewing discal cell + Size + Forewing discal cell:logAge) 
+ CoxPH Model(Forewing discal cell + Sex + Forewing discal cell:logAge) 
 -----------------------------------
 Call:
 coxph(formula = Surv(tstart, tstop, event) ~ Sex + FWdc_z + FWdc_z:logtmid, 
