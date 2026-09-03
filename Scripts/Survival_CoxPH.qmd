@@ -176,7 +176,7 @@ print(survivorship_plot)
 
 ```{r}
 ggsave(
-  filename = "../Results/Survival_CoxPH/Figures/Figure_01_survivorship_plot.jpg",
+  filename = "../Results/Survival_CoxPH/Figures/Figure_01_survivorship_plot.pdf",
   plot = survivorship_plot$plot,
   width = 180,    
   height = 120,
@@ -393,7 +393,7 @@ print(male_plot)
 
 ```{r}
 ggsave(
-  filename = "../Results/Survival_CoxPH/Figures/Figure_05_male_plot.jpg",
+  filename = "../Results/Survival_CoxPH/Figures/Figure_05_male_plot.pdf",
   plot = male_plot$plot,
   width = 180,    
   height = 120,
@@ -444,13 +444,28 @@ save_file(czNoSex,"Diagnostics of CoxPH model(Forewing discal cell)", diagnostic
 ### Plot diagnostics
 
 ```{r}
-par(mfrow = c(1,2))
-yLim <- c(-5,5)
-czNoSex_plot <- plot(czNoSex, pch = 19, cex = 0.2, 
-     col = "red" , ylim = yLim)
-```
+par(mfrow = c(1, 2))
 
+yLim <- c(-5, 5)
+
+plot(
+  czNoSex,
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+pval <- czNoSex$table[1, "p"]
+
+text(
+  x = 0.5,
+  y = 4,
+  labels = paste0("p = ", format.pval(pval, digits = 3))
+)
+```
 ### Save plot
+
 ```{r}
 jpeg(
   filename = "../Results/Survival_CoxPH/Figures/Figure_06_size_coxph_diagnostics.jpg",
@@ -460,15 +475,24 @@ jpeg(
   res = 300
 )
 
-par(mfrow = c(1,2))
-yLim <- c(-5,5)
+par(mfrow = c(1, 2))
 
-czNoSex_plot <- plot(
+yLim <- c(-5, 5)
+
+plot(
   czNoSex,
   pch = 19,
   cex = 0.2,
   col = "red",
   ylim = yLim
+)
+
+pval <- czNoSex$table[1, "p"]
+
+text(
+  x = 0.5,
+  y = 4,
+  labels = paste0("p = ", format.pval(pval, digits = 3))
 )
 
 dev.off()
@@ -486,14 +510,38 @@ save_file(cz0,"Diagnostics of CoxPH model(Forewing discal cell + Size)", diagnos
 ### Plot diagnostics
 
 ```{r}
-par(mfrow = c(1,2))
-yLim <- c(-5,5)
-plot(cz0, var="Sex", pch = 19, cex = 0.2, 
-     col = "red" , ylim = yLim)
-plot(cz0, var="FWdc_z", pch = 19, cex = 0.2, 
-     col = "red", ylim = yLim)
-```
+par(mfrow = c(1, 2))
 
+yLim <- c(-5, 5)
+
+# Sex
+plot(cz0, var = "Sex",
+     pch = 19, cex = 0.2,
+     col = "red", ylim = yLim)
+
+p_sex <- cz0$table["Sex", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_sex, digits = 3)),
+  cex = 1.1
+)
+
+# FWdc_z
+plot(cz0, var = "FWdc_z",
+     pch = 19, cex = 0.2,
+     col = "red", ylim = yLim)
+
+p_fw <- cz0$table["FWdc_z", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_fw, digits = 3)),
+  cex = 1.1
+)
+```
 ### Save plot
 ```{r}
 jpeg(
@@ -504,15 +552,36 @@ jpeg(
   res = 300
 )
 
-par(mfrow = c(1,2))
-yLim <- c(-5,5)
+par(mfrow = c(1, 2))
 
-cz0_plot <- plot(
-  cz0,
-  pch = 19,
-  cex = 0.2,
-  col = "red",
-  ylim = yLim
+yLim <- c(-5, 5)
+
+# Sex
+plot(cz0, var = "Sex",
+     pch = 19, cex = 0.2,
+     col = "red", ylim = yLim)
+
+p_sex <- cz0$table["Sex", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_sex, digits = 3)),
+  cex = 1.1
+)
+
+# FWdc_z
+plot(cz0, var = "FWdc_z",
+     pch = 19, cex = 0.2,
+     col = "red", ylim = yLim)
+
+p_fw <- cz0$table["FWdc_z", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_fw, digits = 3)),
+  cex = 1.1
 )
 
 dev.off()
@@ -691,23 +760,139 @@ save_file(linsplit.zph,"Diagnostics of CoxPH model(Forewing discal cell + Sex + 
 ### View plot in markdown
 
 ```{r linear_coxph_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
-par(mfrow = c(2,2))
-plot(linsplit.zph)
-```
 
+par(mfrow = c(2, 2))
+
+yLim <- c(-5, 5)
+
+# FWdc_z
+plot(
+  linsplit.zph,
+  var = "FWdc_z",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_fw <- linsplit.zph$table["FWdc_z", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_fw, digits = 3)),
+  cex = 1.1
+)
+
+# Sex
+plot(
+  linsplit.zph,
+  var = "Sex",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_sex <- linsplit.zph$table["Sex", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_sex, digits = 3)),
+  cex = 1.1
+)
+
+# Size:time
+plot(
+  linsplit.zph,
+  var = "FWdc_z:tmid",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_size_time <- linsplit.zph$table["FWdc_z:tmid", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_size_time, digits = 3)),
+  cex = 1.1
+)
+```
 ### Save plot
 
 ```{r linear_coxph_plot}
 jpeg(
   filename = "../Results/Survival_CoxPH/Figures/Figure_08_linear_split_coxph_diagnostics.jpg",
   width = 180,
-  height = 120,
+  height = 160,
   units = "mm",
   res = 300
 )
 
-par(mfrow = c(2,2))
-plot(linsplit.zph)
+par(mfrow = c(2, 2))
+
+yLim <- c(-5, 5)
+
+# FWdc_z
+plot(
+  linsplit.zph,
+  var = "FWdc_z",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_fw <- linsplit.zph$table["FWdc_z", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_fw, digits = 3)),
+  cex = 1.1
+)
+
+# Sex
+plot(
+  linsplit.zph,
+  var = "Sex",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_sex <- linsplit.zph$table["Sex", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_sex, digits = 3)),
+  cex = 1.1
+)
+
+# Size:time
+plot(
+  linsplit.zph,
+  var = "FWdc_z:tmid",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_size_time <- linsplit.zph$table["FWdc_z:tmid", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_size_time, digits = 3)),
+  cex = 1.1
+)
 
 dev.off()
 ```
@@ -724,7 +909,66 @@ save_file(logsplit.zph,"Diagnostics of CoxPH model(Forewing discal cell + Sex + 
 
 ```{r log_coxph_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
 par(mfrow = c(2,2))
-plot(logsplit.zph)
+yLim <- c(-5, 5)
+
+# Sex
+plot(
+  logsplit.zph,
+  var = "Sex",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_sex <- logsplit.zph$table["Sex", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_sex, digits = 3)),
+  cex = 1.1
+)
+
+
+# FWdc_z
+plot(
+  logsplit.zph,
+  var = "FWdc_z",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_fw <- logsplit.zph$table["FWdc_z", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_fw, digits = 3)),
+  cex = 1.1
+)
+
+
+# FWdc_z:logtmid
+plot(
+  logsplit.zph,
+  var = "FWdc_z:logtmid",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_log_fw <- logsplit.zph$table["FWdc_z:logtmid", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_log_fw, digits = 3)),
+  cex = 1.1
+)
 ```
 
 ### Save plot
@@ -733,13 +977,73 @@ plot(logsplit.zph)
 jpeg(
   filename = "../Results/Survival_CoxPH/Figures/Figure_09_log_split_coxph_diagnostics.jpg",
   width = 180,
-  height = 120,
+  height = 160,
   units = "mm",
   res = 300
 )
 
-par(mfrow = c(2,2))
-plot(logsplit.zph)
+par(mfrow = c(2, 2))
+yLim <- c(-5, 5)
+
+# Sex
+plot(
+  logsplit.zph,
+  var = "Sex",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_sex <- logsplit.zph$table["Sex", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_sex, digits = 3)),
+  cex = 1.1
+)
+
+
+# FWdc_z
+plot(
+  logsplit.zph,
+  var = "FWdc_z",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_fw <- logsplit.zph$table["FWdc_z", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_fw, digits = 3)),
+  cex = 1.1
+)
+
+
+# FWdc_z:logtmid
+plot(
+  logsplit.zph,
+  var = "FWdc_z:logtmid",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_log_fw <- logsplit.zph$table["FWdc_z:logtmid", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_log_fw, digits = 3)),
+  cex = 1.1
+)
+
 
 dev.off()
 ```
@@ -782,15 +1086,172 @@ save_file(sextv.zph,"Diagnostics of CoxPH model(Forewing discal cell + Sex + For
 
 ```{r log_time_diagnostics, fig.width=8, fig.height=8, dpi=300, out.width="180mm"}
 par(mfrow = c(2,2))
-plot(sextv.zph)
+yLim <- c(-5, 5)
+
+# Sex
+plot(
+  sextv.zph,
+  var = "Sex",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_sex <- sextv.zph$table["Sex", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_sex, digits = 3)),
+  cex = 1.1
+)
+
+
+# FWdc_z
+plot(
+  sextv.zph,
+  var = "FWdc_z",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_fw <- sextv.zph$table["FWdc_z", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_fw, digits = 3)),
+  cex = 1.1
+)
+
+
+# FWdc_z:logtmid
+plot(
+  sextv.zph,
+  var = "FWdc_z:logtmid",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_log_fw <- sextv.zph$table["FWdc_z:logtmid", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_log_fw, digits = 3)),
+  cex = 1.1
+)
+
+# Sex:logtmid
+plot(
+  sextv.zph,
+  var = "Sex:logtmid",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_log_sex <- sextv.zph$table["Sex:logtmid", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_log_sex, digits = 3)),
+  cex = 1.1
+)
 ```
+
 
 ```{r save_log_time_plot}
 jpeg("../Results/Survival_CoxPH/Figures/Figure_10_log_time_coxph_diagnostics.jpg",
-     width = 180, height = 120, units = "mm", res = 300)
+     width = 180, height = 140, units = "mm", res = 300)
 
 par(mfrow = c(2,2))
-plot(sextv.zph)
+yLim <- c(-5, 5)
+
+# Sex
+plot(
+  sextv.zph,
+  var = "Sex",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_sex <- sextv.zph$table["Sex", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_sex, digits = 3)),
+  cex = 1.1
+)
+
+
+# FWdc_z
+plot(
+  sextv.zph,
+  var = "FWdc_z",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_fw <- sextv.zph$table["FWdc_z", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_fw, digits = 3)),
+  cex = 1.1
+)
+
+
+# FWdc_z:logtmid
+plot(
+  sextv.zph,
+  var = "FWdc_z:logtmid",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_log_fw <- sextv.zph$table["FWdc_z:logtmid", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_log_fw, digits = 3)),
+  cex = 1.1
+)
+
+# Sex:logtmid
+plot(
+  sextv.zph,
+  var = "Sex:logtmid",
+  pch = 19,
+  cex = 0.2,
+  col = "red",
+  ylim = yLim
+)
+
+p_log_sex <- sextv.zph$table["Sex:logtmid", "p"]
+
+text(
+  x = 0.5,
+  y = 4.5,
+  labels = paste0("p = ", format.pval(p_log_sex, digits = 3)),
+  cex = 1.1
+)
 
 dev.off()
 ```
@@ -1129,7 +1590,7 @@ final_fig
 
 ```{r}
 ggsave(
-  filename = "../Results/Survival_CoxPH/Figures/Figure_12_Figure3Panels.jpg",
+  filename = "../Results/Survival_CoxPH/Figures/Figure_12_Figure3Panels.pdf",
   plot = final_fig,
   width = 280,    
   height = 120,

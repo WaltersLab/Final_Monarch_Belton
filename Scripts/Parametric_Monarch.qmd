@@ -693,6 +693,7 @@ save_output(
 ```
 
 The LRTs provide additional support for a significant effect of **sex**, so long as we have **size** already in the model. This makes some intuitive sense, because **size** and **sex** are strongly related, as males are larger than females. So to detect the effect of **sex**, we need to account for **size** in the model as well.
+
 ### Convert survfit object to tidy data frame
 ```{r}
 km_to_df <- function(km_fit){
@@ -781,7 +782,7 @@ ggplot() +
       colour = Sex,
       linetype = CurveType
     ),
-    linewidth = 1.2
+    linewidth = 1.4
   ) +
 
   scale_color_manual(values = sex_cols) +
@@ -797,14 +798,17 @@ ggplot() +
 
   theme_bw()
 
-weibull_sex
+weibull_s <- weibull_sex +
+  theme(
+    legend.key.width = unit(1.6, "cm")
+  )
 ```
 
 
 ```{r}
 ggsave(
   "../Results/Parametric_Monarch/Figures/Figure_05_parametric_by_sex.png",
-  plot = weibull_sex,
+  plot = weibull_s,
   width = 180,    
   height = 120,
   units = "mm",
@@ -938,6 +942,25 @@ ggsave(
   plot = weibull_size,
   width = 10,
   height = 4,
+  dpi = 300
+)
+```
+
+```{r}
+combined_fig <-
+  weibull_s / weibull_size +
+  plot_annotation(tag_levels = "A")
+
+combined_fig
+```
+
+```{r}
+ggsave(
+  "../Results/Parametric_Monarch/Figures/combined_fig.pdf",
+  plot = combined_fig,
+  width = 180,    
+  height = 120,
+  units = "mm",
   dpi = 300
 )
 ```

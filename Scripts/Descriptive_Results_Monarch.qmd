@@ -127,7 +127,7 @@ print(full_histo_plot)
 
 ```{r}
 ggsave(
-  filename = "../Results/Descriptive_Results/Figures/Figure_01_age_histogram.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_01_age_histogram.pdf",
   plot = full_histo_plot,
   width = 180,    
   height = 120,
