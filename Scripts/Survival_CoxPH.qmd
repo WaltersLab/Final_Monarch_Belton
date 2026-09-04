@@ -23,6 +23,7 @@ library(splines)
 library(muhaz)
 library(reporter)
 library(gtsummary)
+library(stringr)
 ```
 
 ## Load previously 'cleaned' dataset
@@ -169,8 +170,31 @@ survivorship_plot <- ggsurvplot(
   size = 1,
   ggtheme = theme_monarch
 )
+```
+
+## Print Kaplan-Meier Plot with caption
+
+```{r}
+caption_text <- str_wrap(
+  "Figure 2: Survival curves of captive reared monarchs. Kaplan-Meier survival curves for male (blue) and female (red) representing adult lifespans from >400 individuals in each sex of captive reared D. plexippus butterflies. Males have significantly greater survival than females (p = 2 × 10⁻⁵).",
+  width = 90
+)
+
+survivorship_plot$plot <- survivorship_plot$plot +
+  labs(caption = caption_text) +
+  theme(
+    plot.caption = element_text(
+      hjust = 0,
+      size = 10,
+      lineheight = 1.2
+    ),
+    plot.margin = margin(10, 10, 60, 10)
+  )
+
 print(survivorship_plot)
 ```
+
+
 
 ### Save Kaplan-Meier Plot
 
@@ -388,6 +412,29 @@ male_plot <- ggsurvplot(
 )
 print(male_plot)
 ```
+
+## Print male plot in terminal
+
+```{r}
+caption_text <- str_wrap(
+  "Figure 3: Survival curve comparing males with wing-length measurements to those where wing-length was not capable of being measured. The males missing wing-length data had greater survival than those with wing length data (p = 7.42 x 10⁻⁵). ",
+  width = 90
+)
+
+male_plot$plot <- male_plot$plot +
+  labs(caption = caption_text) +
+  theme(
+    plot.caption = element_text(
+      hjust = 0,
+      size = 10,
+      lineheight = 1.2
+    ),
+    plot.margin = margin(10, 10, 60, 10)
+  )
+
+print(male_plot)
+```
+
 
 ### Save male_plot
 
@@ -1587,6 +1634,30 @@ final_fig <-
 
 final_fig
 ```
+
+
+## Print 3-panel figure in terminal
+
+```{r}
+caption_text <- str_wrap(
+  "Figure 4. Sex-specific changes in age-specific mortality and hazard rates are age-dependent. Panel A depicts the change in the ratio of male/female hazard over age, assuming an ‘average’-sized butterfly, so only the effect of sex is shown. Panel B shows the manually calculated mortality, separated via sex. Panel C displays the smoothed mortality, created via the muhaz package. Both Panel B and Panel C have log(mortality) as the y-axis, for ease in visualization of the plots.",
+  width = 160
+)
+
+final_fig <- final_fig +
+  plot_annotation(
+    caption = caption_text,
+    theme = theme(
+      plot.caption = element_text(
+        hjust = 0,
+        size = 10,
+        lineheight = 1.2
+      )
+    )
+  )
+print(final_fig)
+```
+
 
 ```{r}
 ggsave(

@@ -949,7 +949,24 @@ ggsave(
 ```{r}
 combined_fig <-
   weibull_s / weibull_size +
-  plot_annotation(tag_levels = "A")
+  plot_annotation(tag_levels = "A") 
+
+caption_text <- str_wrap(
+  "Figure 5. This demonstrates the seperate and significant impact both sex and size has on aging. Panel A shows the plotted predicted values from the P4 model, under the assumption that the butterfly is of ‘average size’, to control the predictor of size, against the previously documented Kaplan-Meier curves. Panel B depicts P4 plotted separately by sex at three representative size values (categorized as small: one SD below mean size, average: mean size, and large: individuals one SD above mean size), showing that as size increased, aging was reduced (Fig. 6).",
+  width = 90
+)
+
+combined_fig <- combined_fig +
+  plot_annotation(
+    caption = caption_text,
+    theme = theme(
+      plot.caption = element_text(
+        hjust = 0,
+        size = 10,
+        lineheight = 1.2
+      )
+    )
+  )
 
 combined_fig
 ```
@@ -959,7 +976,7 @@ ggsave(
   "../Results/Parametric_Monarch/Figures/combined_fig.pdf",
   plot = combined_fig,
   width = 180,    
-  height = 120,
+  height = 180,
   units = "mm",
   dpi = 300
 )
