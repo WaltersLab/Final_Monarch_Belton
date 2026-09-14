@@ -115,10 +115,7 @@ full_histo_plot <- monsurv %>%
   scale_fill_manual(values = sex_colors) +
   labs(
     x = "Days Since Eclosion",
-    y = "Number of Individuals",
-    caption = "Figure 1: Lifespans of male and female monarch butterflies. Distributions of male (top; blue) and 
-    female (bottom; red) adult lifespan from >400 captive-reared D. plexippus butterflies."
-  ) +
+    y = "Number of Individuals") +
   theme_monarch 
 
 print(full_histo_plot)
