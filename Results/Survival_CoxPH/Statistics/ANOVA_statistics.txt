@@ -140,7 +140,7 @@ Analysis of Deviance Table
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 -----------------------------------
- Anova Comparison CoxPH Model(Forewing discal cell + Forewing discal cell:log(tt(Age))) vs. CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age)) + Size:log(tt(Age))) 
+ Anova Comparison CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age))) vs. CoxPH Model(Sex + Forewing discal cell + Forewing discal cell:log(tt(Age)) + Sex:log(tt(Age))) 
 -----------------------------------
 Analysis of Deviance Table
  Cox model: response is  Surv(Age, event)
