@@ -454,7 +454,8 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = "Beta(t) for Size"
 )
 
 pval <- czNoSex$table[1, "p"]
@@ -485,7 +486,8 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = "Beta(t) for Size"
 )
 
 pval <- czNoSex$table[1, "p"]
@@ -532,7 +534,9 @@ text(
 # FWdc_z
 plot(cz0, var = "FWdc_z",
      pch = 19, cex = 0.2,
-     col = "red", ylim = yLim)
+     col = "red", ylim = yLim, ylab = "")
+
+mtext("Beta(t) for Size", side = 2, line = 2.5)
 
 p_fw <- cz0$table["FWdc_z", "p"]
 
@@ -574,7 +578,10 @@ text(
 # FWdc_z
 plot(cz0, var = "FWdc_z",
      pch = 19, cex = 0.2,
-     col = "red", ylim = yLim)
+     col = "red", ylim = yLim,
+     ylab = "")
+
+mtext("Beta(t) for Size", side = 2, line = 2.5)
 
 p_fw <- cz0$table["FWdc_z", "p"]
 
@@ -773,8 +780,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size", side = 2, line = 2.5)
 
 p_fw <- linsplit.zph$table["FWdc_z", "p"]
 
@@ -792,8 +802,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Sex", side = 2, line = 2.5)
 
 p_sex <- linsplit.zph$table["Sex", "p"]
 
@@ -811,8 +824,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size:Age", side = 2, line = 2.5)
 
 p_size_time <- linsplit.zph$table["FWdc_z:tmid", "p"]
 
@@ -845,8 +861,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size", side = 2, line = 2.5)
 
 p_fw <- linsplit.zph$table["FWdc_z", "p"]
 
@@ -864,8 +883,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Sex", side = 2, line = 2.5)
 
 p_sex <- linsplit.zph$table["Sex", "p"]
 
@@ -883,8 +905,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size:Age", side = 2, line = 2.5)
 
 p_size_time <- linsplit.zph$table["FWdc_z:tmid", "p"]
 
@@ -919,8 +944,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Sex", side = 2, line = 2.5)
 
 p_sex <- logsplit.zph$table["Sex", "p"]
 
@@ -939,8 +967,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size", side = 2, line = 2.5)
 
 p_fw <- logsplit.zph$table["FWdc_z", "p"]
 
@@ -959,8 +990,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size:log(Age)", side = 2, line = 2.5)
 
 p_log_fw <- logsplit.zph$table["FWdc_z:logtmid", "p"]
 
@@ -993,8 +1027,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Sex", side = 2, line = 2.5)
 
 p_sex <- logsplit.zph$table["Sex", "p"]
 
@@ -1013,8 +1050,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size", side = 2, line = 2.5)
 
 p_fw <- logsplit.zph$table["FWdc_z", "p"]
 
@@ -1033,8 +1073,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size:log(Age)", side = 2, line = 2.5)
 
 p_log_fw <- logsplit.zph$table["FWdc_z:logtmid", "p"]
 
@@ -1096,8 +1139,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Sex", side = 2, line = 2.5)
 
 p_sex <- sextv.zph$table["Sex", "p"]
 
@@ -1116,8 +1162,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size", side = 2, line = 2.5)
 
 p_fw <- sextv.zph$table["FWdc_z", "p"]
 
@@ -1136,8 +1185,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size:log(Age)", side = 2, line = 2.5)
 
 p_log_fw <- sextv.zph$table["FWdc_z:logtmid", "p"]
 
@@ -1155,8 +1207,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Sex:log(Age)", side = 2, line = 2.5)
 
 p_log_sex <- sextv.zph$table["Sex:logtmid", "p"]
 
@@ -1183,8 +1238,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Sex", side = 2, line = 2.5)
 
 p_sex <- sextv.zph$table["Sex", "p"]
 
@@ -1203,8 +1261,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size", side = 2, line = 2.5)
 
 p_fw <- sextv.zph$table["FWdc_z", "p"]
 
@@ -1223,8 +1284,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Size:log(Age)", side = 2, line = 2.5)
 
 p_log_fw <- sextv.zph$table["FWdc_z:logtmid", "p"]
 
@@ -1242,8 +1306,11 @@ plot(
   pch = 19,
   cex = 0.2,
   col = "red",
-  ylim = yLim
+  ylim = yLim,
+  ylab = ""
 )
+
+mtext("Beta(t) for Sex:log(Age)", side = 2, line = 2.5)
 
 p_log_sex <- sextv.zph$table["Sex:logtmid", "p"]
 
