@@ -304,7 +304,7 @@ print(forewing_histo)
 
 ```{r}
 ggsave(
-  filename = "../Results/Descriptive_Results/Figures/Figure_06_forewing_histogram.jpg",
+  filename = "../Results/Descriptive_Results/Figures/Figure_06_forewing_histogram.pdf",
   plot = forewing_histo,
   width = 180,    
   height = 120,
